@@ -4,11 +4,22 @@ import numpy as np
 from components.card import card_component, Counter, form_component    
 
 # Basic app title
+st.set_page_config(page_title="NeuronMap", initial_sidebar_state="collapsed")   
+st.markdown(
+    """
+    <style>
+        [data-testid="stBaseButton-headerNoPadding"] { display: none !important; }
+        [data-testid="collapsedControl"] { display: none !important; }
+        section[data-testid="stSidebar"] { display: none !important; }  
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 st.title("NeuronMap")
 
 # Simple text
 st.write("This is a very basic Streamlit app example")
-
 # Add a slider
 value = st.slider("Select a value", 0, 100, 50)
 st.write(f"You selected: {value}")
