@@ -69,4 +69,4 @@ streamlit run app.py
 
 ## Keeping the App Active
 
-To prevent the app from going to sleep on hosting platforms, a keep-alive mechanism is included. You can use services like uptimerobot[https://dashboard.uptimerobot.com/] to ping your app regularly.
+To prevent the app from going to sleep on hosting platforms, a keep-alive mechanism is included. You can use services like [uptimerobot](https://uptimerobot.com/) to ping your app regularly.
