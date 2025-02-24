@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from components.card import card_component, Counter, form_component    
+from streamlit_option_menu import option_menu
 
 # Basic app title
 st.set_page_config(page_title="NeuronMap", initial_sidebar_state="collapsed")   
@@ -15,7 +16,24 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+selected = option_menu(
+    menu_title="Main Menu",  #required
+    options=["Home", "Projects", "Contact"],  #required
+    icons=["house", "book", "envelope"],  #optional
+    menu_icon="cast",  #optional
+    default_index=0,  #optional
+    orientation="horizontal",
+    styles={
+            
+    }
+)
 
+if selected == "Home":
+    st.title(f"You have selected {selected}")
+if selected == "Projects":
+    st.title(f"You have selected {selected}")
+if selected == "Contact":
+    st.title(f"You have selected {selected}")
 st.title("NeuronMap")
 
 # Simple text
