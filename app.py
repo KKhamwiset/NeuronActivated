@@ -1,5 +1,6 @@
 import streamlit as st
-
+import pandas as pd
+import numpy as np
 # Basic app title
 st.title("Hello Streamlit")
 
@@ -19,9 +20,7 @@ name = st.text_input("Enter your name")
 if name:
     st.write(f"Hello, {name}!")
 
-# Display some data
-import pandas as pd
-import numpy as np
+
 
 # Create a simple dataframe
 data = pd.DataFrame({
