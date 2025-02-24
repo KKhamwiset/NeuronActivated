@@ -25,8 +25,8 @@ project_folder/
 
 1. Clone this repository:
 ```bash
-git clone https://github.com/yourusername/simple-ml-app.git
-cd simple-ml-app
+git clone https://github.com/KKhamwiset/IS_Project
+cd your folder
 ```
 
 2. Create and activate a virtual environment (optional but recommended):
