@@ -1,7 +1,9 @@
-name: Setting runtime
+name: my_environment
 channels:
   - conda-forge
   - defaults
 dependencies:
   - python=3.10
   - pip
+  - pip:
+    - -r ./requirements.txt
