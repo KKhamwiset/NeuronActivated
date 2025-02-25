@@ -5,28 +5,30 @@ from components.card import card_component, Counter, form_component
 from streamlit_option_menu import option_menu
 
 # Basic app title
-st.set_page_config(page_title="NeuronMap", initial_sidebar_state="collapsed")   
+st.set_page_config(page_title="NeuronActivated", initial_sidebar_state="expanded")   
 st.markdown(
     """
     <style>
-        [data-testid="stBaseButton-headerNoPadding"] { display: none !important; }
-        [data-testid="collapsedControl"] { display: none !important; }
-        section[data-testid="stSidebar"] { display: none !important; }  
+        
     </style>
     """,
     unsafe_allow_html=True,
 )
-selected = option_menu(
-    menu_title="Main Menu",  #required
-    options=["Home", "Projects", "Contact"],  #required
-    icons=["house", "book", "envelope"],  #optional
-    menu_icon="cast",  #optional
-    default_index=0,  #optional
-    orientation="horizontal",
-    styles={
-            
-    }
-)
+with st.sidebar:
+    selected = option_menu(
+        menu_title="NeuronActivated",
+        options=["Home", "Projects", "Contact"],
+        icons=["house", "book", "envelope"],
+        menu_icon="robot",
+        default_index=0,
+        orientation="vertical",
+        styles={
+            "container": {"padding": "5px", "background-color": "#262730"},
+            "icon": {"color": "orange", "font-size": "25px"}, 
+            "nav-link": {"font-size": "16px", "text-align": "left", "margin":"0px"},
+            "nav-link-selected": {"background-color": "#FF5757"},
+        }
+    )
 
 if selected == "Home":
     st.title(f"You have selected {selected}")
@@ -34,7 +36,9 @@ if selected == "Projects":
     st.title(f"You have selected {selected}")
 if selected == "Contact":
     st.title(f"You have selected {selected}")
-st.title("NeuronMap")
+
+
+st.title("NeurouActivated")
 
 # Simple text
 st.write("This is a very basic Streamlit app example")

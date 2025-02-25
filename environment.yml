@@ -1,9 +1,9 @@
-name: my_environment
+name: _environment
 channels:
   - conda-forge
   - defaults
 dependencies:
-  - python=3.10
+  - python=3.12
   - pip
   - pip:
     - -r ./requirements.txt
