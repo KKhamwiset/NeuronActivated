@@ -13,16 +13,34 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
             
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Set up conda
+        uses: conda-incubator/setup-miniconda@v2
         with:
-          python-version: '3.10'
+          python-version: '3.12'
+          miniforge-variant: Mambaforge
+          channels: conda-forge,defaults
+          channel-priority: strict
+          activate-environment: test-env
+          
+      - name: Install dependencies
+        shell: bash -l {0}
+        run: |
+          if [ -f environment.yml ]; then
+            conda env update --file environment.yml
+          else
+            # Install from requirements.txt with conda
+            conda install -y pytest coverage
             
-      - name: Install testing dependencies
-        run: pip install -r ./requirements.txt coverage pytest
+            if [ -f requirements.txt ]; then
+              while read requirement; do
+                conda install -y $requirement || pip install $requirement
+              done < requirements.txt
+            fi
+          fi
 
       - name: Check for test files
         id: check-tests
+        shell: bash -l {0}
         run: |
             if find . -name "test_*.py" -o -name "*_test.py" | grep -q .; then
               echo "tests_exist=true" >> $GITHUB_OUTPUT
@@ -32,10 +50,12 @@ jobs:
 
       - name: Run testing
         if: steps.check-tests.outputs.tests_exist == 'true'
+        shell: bash -l {0}
         run: |
             coverage run --source=. --omit="*/components/*,app.py" -m pytest
             coverage report
 
       - name: Skip testing
         if: steps.check-tests.outputs.tests_exist == 'false'
+        shell: bash -l {0}
         run: echo "No test files found. Skipping tests."
