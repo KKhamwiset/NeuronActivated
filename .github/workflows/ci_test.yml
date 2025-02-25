@@ -21,7 +21,21 @@ jobs:
       - name: Install testing dependencies
         run: pip install -r ./requirements.txt coverage pytest
 
-      - name: Run testing
+      - name: Check for test files
+        id: check-tests
         run: |
-          coverage run --source=. --omit="*/components/*,app.py" -m pytest
-          coverage report
+            if find . -name "test_*.py" -o -name "*_test.py" | grep -q .; then
+              echo "tests_exist=true" >> $GITHUB_OUTPUT
+            else
+              echo "tests_exist=false" >> $GITHUB_OUTPUT
+            fi
+
+      - name: Run testing
+        if: steps.check-tests.outputs.tests_exist == 'true'
+        run: |
+            coverage run --source=. --omit="*/components/*,app.py" -m pytest
+            coverage report
+
+      - name: Skip testing
+        if: steps.check-tests.outputs.tests_exist == 'false'
+        run: echo "No test files found. Skipping tests."

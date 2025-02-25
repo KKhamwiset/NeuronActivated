@@ -61,7 +61,7 @@ streamlit run app.py
 ## Dependencies
 
 - streamlit
-- tensorflow
+- pytorch
 - pandas
 - numpy
 - scikit-learn
