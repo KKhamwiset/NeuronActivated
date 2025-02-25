@@ -19,9 +19,9 @@ jobs:
           python-version: '3.10'
             
       - name: Install testing dependencies
-        run: pip install -r ./requirements.txt coverage
+        run: pip install -r ./requirements.txt coverage pytest
 
       - name: Run testing
         run: |
-          coverage run --source ./app.py test
+          coverage run --source=. --omit="*/components/*,app.py" -m pytest
           coverage report
