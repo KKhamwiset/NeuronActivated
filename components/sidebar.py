@@ -36,7 +36,7 @@ def create_sidebar(current_page="Home"):
             styles={
                 "container": {"padding": "5px", "background-color": "#262730"},
                 "icon": {"color": "orange", "font-size": "25px"}, 
-                "nav-link": {"font-size": "12px", "text-align": "left", "margin":"0px"},
+                "nav-link": {"font-size": "12px", "text-align": "left","font-weight" : "bold" , "margin":"0px"},
                 "nav-link-selected": {"background-color": "#FF5757"},
              
             }
