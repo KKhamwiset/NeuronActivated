@@ -1,4 +1,11 @@
 # this is needed for local development with docker
+[theme]
+primaryColor = "#FF5757"
+backgroundColor = "#0E1117"
+secondaryBackgroundColor = "#262730"
+textColor = "#FFFFFF"
+font = "sans serif"
+base = "dark"
 [server]
 # if you don't want to start the default browser:
 headless = true
@@ -6,3 +13,6 @@ headless = true
 runOnSave = true
 # you will need this if running docker on windows host:
 fileWatcherType = "poll"
+port = 8501
+[browser]
+gatherUsageStats = false
