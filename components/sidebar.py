@@ -1,6 +1,7 @@
 import streamlit as st
 from streamlit_option_menu import option_menu
 from components.main_style import apply_custom_style
+
 def create_sidebar(current_page="Home"):
     apply_custom_style()
     
@@ -35,8 +36,9 @@ def create_sidebar(current_page="Home"):
             styles={
                 "container": {"padding": "5px", "background-color": "#262730"},
                 "icon": {"color": "orange", "font-size": "25px"}, 
-                "nav-link": {"font-size": "16px", "text-align": "left", "margin":"0px"},
+                "nav-link": {"font-size": "12px", "text-align": "left", "margin":"0px"},
                 "nav-link-selected": {"background-color": "#FF5757"},
+             
             }
         )
         
@@ -52,11 +54,7 @@ def create_sidebar(current_page="Home"):
             </div>
         """, unsafe_allow_html=True)
         
-        st.markdown("""
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-        """, unsafe_allow_html=True)
     
-
     if selected != "---":
         st.session_state.sidebar_selection = selected
     return selected
