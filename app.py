@@ -8,15 +8,13 @@ from pages.neuron_implementation import neuron_implement_viewset
 from pages.neuron_preparations import neuron_prepare_viewset
 from pages.reference import Ref_viewset
 
-# Set up the page
-if 'page_config_set' not in st.session_state:
-    # Set the page config only once
-    st.set_page_config(
-        page_title="NeuronActivated",
-        page_icon="🧠",
-        layout="centered"
-    )
-    st.session_state.page_config_set = True
+st.set_page_config(
+    page_title="NeuronActivated",
+    page_icon="🧠",
+    layout="centered",
+    initial_sidebar_state="auto",
+    menu_items=None
+)
 
 # Custom CSS to enhance Bootstrap
 st.markdown("""
@@ -47,7 +45,7 @@ class PageHandler:
 
     def show_ml_preparations(self):
         show = ML_prepare_viewset()
-        show.app()
+        show.tabs_manager()
 
     def show_neuron_implementation(self):
         show = neuron_implement_viewset()
