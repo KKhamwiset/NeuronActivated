@@ -285,8 +285,6 @@ class ML_prepare_viewset:
                 **เนื่องจาก dataset ถูกแบ่งเป็น 2 ไฟล์**
                 * `adult.data` สำหรับการเทรน
                 * `adult.test` สำหรับผลลัพธ์\n
-                ผมเลยสามารถที่จะข้ามการใช้ train_test_split และใช้ `adult.test` โดยตรงได้เลยเพียงแต่\n
-                ต้องทำการ clean data ของ `adult.test` ตามขั้นตอนด้านบนอีกรอบหนึ่ง
                 """)
         st.subheader("🎯จัดเตรียมชุดข้อมูลที่จะใช้เทรนและทดสอบ")    
         st.markdown("---")
@@ -336,5 +334,106 @@ class ML_prepare_viewset:
         
     def svm_model_training(self):
         st.header("🌟 การเทรน Model SVM")
+        st.markdown("---")  
+        st.subheader("🪛Code สำหรับการเทรน Model SVM")
+        st.markdown("---")
+        st.subheader("🖥️Import Library")
+        st.code("""
+                import torch
+                import torch.nn as nn
+                from torch.utils.data import DataLoader, TensorDataset
+                from sklearn.preprocessing import StandardScaler, LabelEncoder
+                from sklearn.model_selection import train_test_split
+            
+        """)
+        st.subheader("🖥️Code สำหรับการเตรียมข้อมูล")
+        st.code("""
+                  scaler = StandardScaler()
+                X_train_scaled = scaler.fit_transform(X_train)
+                X_test_scaled = scaler.transform(X_test)
+
+
+                X_train_final, X_val, y_train_final, y_val = train_test_split(
+                    X_train_scaled, y_train, test_size=0.3, random_state=42
+                )
+
+                label_encoder = LabelEncoder()
+                y_train_encoded = label_encoder.fit_transform(y_train_final)
+                y_val_encoded = label_encoder.transform(y_val)
+                y_test_encoded = label_encoder.transform(y_test)
+
+
+                X_train_tensor = torch.FloatTensor(X_train_final)
+                y_train_tensor = torch.LongTensor(y_train_encoded)
+                X_val_tensor = torch.FloatTensor(X_val)
+                y_val_tensor = torch.LongTensor(y_val_encoded)
+                X_test_tensor = torch.FloatTensor(X_test_scaled)
+
+                train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
+                train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
+                val_dataset = TensorDataset(X_val_tensor, y_val_tensor)
+                val_loader = DataLoader(val_dataset, batch_size=64)
+        """)
+        st.subheader("🛠️สร้าง Model SVM ด้วย PyTorch และกำหนด learning rate")
+        st.markdown("---")
+        st.info("*Learning rate ที่เหมาะสมและให้ผลลัพธ์ดีที่สุดจากการ tuning คือ 0.01*")
+        st.code("""
+                class SVM(nn.Module):
+                    def __init__(self, input_dim):
+                        super(SVM, self).__init__()
+                        self.linear = nn.Linear(input_dim, 2) 
+                        
+                    def forward(self, x):
+                        return self.linear(x)
+                input_dim = X_train_scaled.shape[1] # จํานวน feature
+                model = SVM(input_dim)
+                criterion = nn.MultiMarginLoss()  # จัดการ missclassification
+                optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
+                """)
+        st.markdown("---")
+        st.subheader("🖥️Code สำหรับการเทรน Model SVM")
+        st.code("""
+                for epoch in range(100):
+                    model.train()
+                    for inputs, labels in train_loader:
+                        optimizer.zero_grad()
+                        outputs = model(inputs)
+                        loss = criterion(outputs, labels)
+                        loss.backward()
+                        optimizer.step()
+                    
+                    model.eval()
+                    all_predictions = []
+                    all_labels = []
+                    with torch.no_grad():
+                        for inputs, labels in val_loader:
+                            outputs = model(inputs)
+                            _, predicted = torch.max(outputs.data, 1)
+                            all_predictions.extend(predicted.cpu().numpy())
+                            all_labels.extend(labels.cpu().numpy())
+                    
+
+                    val_accuracy = accuracy_score(all_labels, all_predictions) * 100
+                    val_precision = precision_score(all_labels, all_predictions, average='weighted') * 100
+                    val_recall = recall_score(all_labels, all_predictions, average='weighted') * 100
+                    val_f1 = f1_score(all_labels, all_predictions, average='weighted') * 100
+                        
+                    if (epoch+1) % 10 == 0:
+                        print(f'Epoch {epoch+1}, Validation Accuracy: {val_accuracy:.2f}%')
+
+                    """)
+        st.markdown("---")
+        st.subheader("✍🏻ประเมิน Model SVM (สรุปผล) และทำการ save model")    
+        st.code("""
+                model.eval()
+                with torch.no_grad():
+                    outputs = model(X_test_tensor)
+                    _, predicted = torch.max(outputs.data, 1)
+                    test_predictions = predicted.cpu().numpy()
+                    test_accuracy = accuracy_score(y_test_encoded, test_predictions)
+                    print(f'Test Accuracy: {test_accuracy:.2f}%')
+                torch.save(model.state_dict(),"../exported_models/svm_model")
+                """)
+
     def kmean_model_training(self):
         st.header("🌟 การเทรน Model K-Mean Clustering")
