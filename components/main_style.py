@@ -1,8 +1,10 @@
 import streamlit as st
-def apply_custom_style():
 
-    #disable top menu
-    st.markdown("""
+
+def apply_custom_style():
+    # disable top menu
+    st.markdown(
+        """
         <style>
             [data-testid="stSidebarNav"] {
                 display: none !important;
@@ -20,10 +22,14 @@ def apply_custom_style():
             }
                 
         </style>
-        """, unsafe_allow_html=True)
-    
-    #include bootstrap icons
-    st.markdown("""
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-        """, unsafe_allow_html=True)
+        """,
+        unsafe_allow_html=True,
+    )
 
+    # include bootstrap icons
+    st.markdown(
+        """
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+        """,
+        unsafe_allow_html=True,
+    )

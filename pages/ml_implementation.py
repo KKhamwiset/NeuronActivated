@@ -10,39 +10,29 @@ import time
 
 
 @st.cache_resource
-def load_svm_model():
+def load_model(model_path, scaler_path=None):
+    """Generic model loader that works with different model types"""
     try:
-        # Try to load model with joblib first (more robust for sklearn objects)
-        model_path = "exported_models/svm/svm_income_model.pkl"
-        if not os.path.exists(model_path):
-            st.error(f"Model file not found at: {model_path}")
-            st.info(f"Current working directory: {os.getcwd()}")
-            st.info(
-                f"Files in exported_models/svm: {os.listdir('exported_models/svm')}"
-            )
-            return None, None
-
+        # Try loading model with joblib first
         try:
             model = joblib.load(model_path)
         except Exception as e1:
-            st.warning(f"Could not load with joblib: {str(e1)}")
-            # Fall back to pickle
+            st.warning(f"Could not load model with joblib: {str(e1)}")
             with open(model_path, "rb") as f:
                 model = pickle.load(f)
 
-        # Try to load scaler
-        scaler_path = "exported_models/svm/svm_income_scaler.pkl"
-        if not os.path.exists(scaler_path):
-            st.error(f"Scaler file not found at: {scaler_path}")
-            return model, None
-
-        try:
-            scaler = joblib.load(scaler_path)
-        except Exception as e2:
-            st.warning(f"Could not load scaler with joblib: {str(e2)}")
-            # Fall back to pickle
-            with open(scaler_path, "rb") as f:
-                scaler = pickle.load(f)
+        # Load scaler if provided
+        scaler = None
+        if scaler_path:
+            if not os.path.exists(scaler_path):
+                st.error(f"Scaler file not found at: {scaler_path}")
+            else:
+                try:
+                    scaler = joblib.load(scaler_path)
+                except Exception as e2:
+                    st.warning(f"Could not load scaler with joblib: {str(e2)}")
+                    with open(scaler_path, "rb") as f:
+                        scaler = pickle.load(f)
 
         return model, scaler
 
@@ -53,388 +43,368 @@ def load_svm_model():
 
 class ML_implement_viewset:
     def __init__(self):
-        self.model, self.scaler = load_svm_model()
-        if self.model is None:
-            st.error("Failed to load model. Please check the file paths and formats.")
+        # Load models with their respective scalers
+        self.svm_model, self.svm_scaler = load_model(
+            "exported_models/svm/svm_income_model.pkl",
+            "exported_models/svm/svm_income_scaler.pkl",
+        )
+        self.rf_model, self.rf_scaler = load_model(
+            "exported_models/rf/rf_income_model.pkl",
+            "exported_models/rf/rf_income_scaler.pkl",
+        )
+
+        # Check if models loaded successfully
+        if self.svm_model is None or self.rf_model is None:
+            st.error(
+                "Failed to load one or more models. Please check the file paths and formats."
+            )
 
     def app(self):
         st.session_state.current_page = "ML Implementation"
 
-        # Sidebar for app navigation and info
-        with st.sidebar:
-            st.markdown("---")
-            st.subheader("Option for Implementation")
-            st.title("Income Predictor")
-            st.markdown("---")
-            st.info(
-                "This app predicts if your income exceeds $50K based on your profile information."
-            )
+        st.title("💰 Income Prediction Models")
 
-            # Add some information about the model
-            with st.expander("About the Model"):
-                st.write(
-                    "This is a Support Vector Machine (SVM) model trained on the UCI Adult Census Income dataset."
-                )
-                st.write(
-                    "Features include demographics, education, employment, and finances."
-                )
-                st.write("Model Accuracy: ~83%")
+        # Create tabs for model selection and about
+        main_tab1, main_tab2 = st.tabs(["📝 Make a Prediction", "ℹ️ About the Models"])
 
-            # Add a disclaimer
-            st.markdown("---")
-            st.caption("⚠️ For educational purposes only. Not for financial decisions.")
+        with main_tab1:
+            # Check if models are loaded
+            if self.svm_model is None and self.rf_model is None:
+                st.error("⚠️ Models could not be loaded. Unable to make predictions.")
+                return
 
-        # Main content
-        st.title("💰 Income Prediction Model")
-
-        if self.model is None:
-            st.error("⚠️ Model could not be loaded. Unable to make predictions.")
-            return
-
-        # Create tabs for better organization
-        tab1, tab2 = st.tabs(["📝 Make a Prediction", "ℹ️ About the Model"])
-
-        with tab1:
-            # Header with description
             st.header("Enter Your Information")
             st.write(
-                "Fill in the form below and click 'Predict Income' to see if your income exceeds $50K/year."
+                "Fill in the form below and select a model to predict if your income exceeds $50K/year."
             )
 
-            # Instructions in an expander
-            with st.expander("📋 How to Use This Model"):
-                st.write("1. Fill in all fields in the form below")
-                st.write("2. Click the 'Predict Income' button at the bottom")
-                st.write("3. View your prediction results and probability analysis")
+            # Get user input
+            input_data = self._collect_user_input()
 
-            # Create a container for the form
-            with st.container():
-                st.subheader("Personal & Professional Details")
+            # Add a divider
+            st.markdown("---")
 
-                # Create two columns for input fields
-                col1, col2 = st.columns(2)
+            # Model selection tabs
+            model_tab1, model_tab2 = st.tabs(
+                ["Support Vector Machine", "Random Forest"]
+            )
 
-                with col1:
-                    st.markdown("##### 👤 Personal Information")
-                    age = st.slider(
-                        "Age",
-                        min_value=18,
-                        max_value=90,
-                        value=30,
-                        help="Your current age in years",
-                    )
-                    race = st.selectbox(
-                        "Race",
-                        [
-                            "White",
-                            "Asian-Pac-Islander",
-                            "Amer-Indian-Eskimo",
-                            "Other",
-                            "Black",
-                        ],
-                        help="Census racial category",
-                    )
-                    gender = st.radio(
-                        "Gender",
-                        ["Male", "Female"],
-                        help="Gender as recorded in census data",
-                        horizontal=True,
-                    )
+            with model_tab1:
+                if self.svm_model is not None:
+                    self._predict_with_model(input_data, "svm")
+                else:
+                    st.error("SVM model is not available")
 
-                    # Use a container for related fields
-                    with st.container():
-                        st.markdown("##### 👪 Family Status")
-                        marital_status = st.selectbox(
-                            "Marital Status",
-                            [
-                                "Married-civ-spouse",
-                                "Divorced",
-                                "Never-married",
-                                "Separated",
-                                "Widowed",
-                                "Married-spouse-absent",
-                                "Married-AF-spouse",
-                            ],
-                            help="Current marital status",
-                        )
-                        relationship = st.selectbox(
-                            "Relationship",
-                            [
-                                "Wife",
-                                "Own-child",
-                                "Husband",
-                                "Not-in-family",
-                                "Other-relative",
-                                "Unmarried",
-                            ],
-                            help="Relationship status in household",
-                        )
+            with model_tab2:
+                if self.rf_model is not None:
+                    self._predict_with_model(input_data, "rf")
+                else:
+                    st.error("Random Forest model is not available")
 
-                    native_country = st.selectbox(
-                        "Native Country",
-                        [
-                            "United-States",
-                            "Cambodia",
-                            "England",
-                            "Puerto-Rico",
-                            "Canada",
-                            "Germany",
-                            "Outlying-US(Guam-USVI-etc)",
-                            "India",
-                            "Japan",
-                            "Greece",
-                            "South",
-                            "China",
-                            "Cuba",
-                            "Iran",
-                            "Honduras",
-                            "Philippines",
-                            "Italy",
-                            "Poland",
-                            "Jamaica",
-                            "Vietnam",
-                            "Mexico",
-                            "Portugal",
-                            "Ireland",
-                            "France",
-                            "Dominican-Republic",
-                            "Laos",
-                            "Ecuador",
-                            "Taiwan",
-                            "Haiti",
-                            "Columbia",
-                            "Hungary",
-                            "Guatemala",
-                            "Nicaragua",
-                            "Scotland",
-                            "Thailand",
-                            "Yugoslavia",
-                            "El-Salvador",
-                            "Trinadad&Tobago",
-                            "Peru",
-                            "Hong",
-                            "Holand-Netherlands",
-                        ],
-                        help="Country of origin",
-                    )
+        with main_tab2:
+            # About the models tab content
+            self._display_model_info()
 
-                with col2:
-                    st.markdown("##### 🎓 Education")
-                    education = st.selectbox(
-                        "Education Level",
-                        [
-                            "Bachelors",
-                            "Some-college",
-                            "11th",
-                            "HS-grad",
-                            "Prof-school",
-                            "Assoc-acdm",
-                            "Assoc-voc",
-                            "9th",
-                            "7th-8th",
-                            "12th",
-                            "Masters",
-                            "Doctorate",
-                            "10th",
-                            "1st-4th",
-                            "5th-6th",
-                            "Preschool",
-                        ],
-                        help="Highest level of education completed",
-                    )
-                    education_num = st.slider(
-                        "Years of Education",
-                        min_value=1,
-                        max_value=16,
-                        value=13,
-                        help="Years of education completed",
-                    )
+    def _collect_user_input(self):
+        """Collect and prepare user input from form"""
+        with st.expander("📋 How to Use These Models"):
+            st.write("1. Fill in all fields in the form below")
+            st.write(
+                "2. Navigate between model tabs to view predictions from different models"
+            )
+            st.write(
+                "3. View prediction results and probability analysis for each model"
+            )
 
-                    # Work container
-                    with st.container():
-                        st.markdown("##### 💼 Employment")
-                        workclass = st.selectbox(
-                            "Work Class",
-                            [
-                                "Private",
-                                "Self-emp-not-inc",
-                                "Self-emp-inc",
-                                "Federal-gov",
-                                "Local-gov",
-                                "State-gov",
-                                "Without-pay",
-                                "Never-worked",
-                            ],
-                            help="Type of employer",
-                        )
-                        occupation = st.selectbox(
-                            "Occupation",
-                            [
-                                "Tech-support",
-                                "Craft-repair",
-                                "Other-service",
-                                "Sales",
-                                "Exec-managerial",
-                                "Prof-specialty",
-                                "Handlers-cleaners",
-                                "Machine-op-inspct",
-                                "Adm-clerical",
-                                "Farming-fishing",
-                                "Transport-moving",
-                                "Priv-house-serv",
-                                "Protective-serv",
-                                "Armed-Forces",
-                            ],
-                            help="Type of work you do",
-                        )
-                        hours_per_week = st.slider(
-                            "Hours per week",
-                            min_value=1,
-                            max_value=100,
-                            value=40,
-                            help="Average hours worked per week",
-                        )
+        with st.container():
+            st.subheader("Personal & Professional Details")
 
-                    # Financial section
-                    st.markdown("##### 💰 Financial Factors")
-                    fnlwgt = st.number_input(
-                        "Final Weight",
-                        min_value=0,
-                        value=200000,
-                        help="Census weighting factor (you can leave as default)",
-                    )
+            col1, col2 = st.columns(2)
 
-                    # Use metrics to make capital gains/losses more visually appealing
-                    cap_gain_col, cap_loss_col = st.columns(2)
-
-                    with cap_gain_col:
-                        capital_gain = st.number_input(
-                            "Capital Gain ($)",
-                            min_value=0,
-                            max_value=100000,
-                            value=0,
-                            help="Income from investment sources",
-                        )
-
-                    with cap_loss_col:
-                        capital_loss = st.number_input(
-                            "Capital Loss ($)",
-                            min_value=0,
-                            max_value=10000,
-                            value=0,
-                            help="Losses from investment sources",
-                        )
-
-                # Preparation of data structure
-                input_data = pd.DataFrame(
+            with col1:
+                st.markdown("##### 👤 Personal Information")
+                age = st.number_input(
+                    "Age",
+                    min_value=18,
+                    max_value=100,
+                    value=30,
+                    help="Your current age in years",
+                )
+                race = st.selectbox(
+                    "Race",
                     [
-                        {
-                            "age": age,
-                            "workclass": workclass,
-                            "fnlwgt": fnlwgt,
-                            "education": education,
-                            "education-num": education_num,
-                            "occupation": occupation,
-                            "marital-status": marital_status,
-                            "relationship": relationship,
-                            "race": race,
-                            "sex": gender,
-                            "capital-gain": capital_gain,
-                            "capital-loss": capital_loss,
-                            "hours-per-week": hours_per_week,
-                            "native-country": native_country,
-                        }
-                    ]
+                        "White",
+                        "Asian-Pac-Islander",
+                        "Amer-Indian-Eskimo",
+                        "Other",
+                        "Black",
+                    ],
+                    help="Census racial category",
+                )
+                gender = st.radio(
+                    "Gender",
+                    ["Male", "Female"],
+                    help="Gender as recorded in census data",
+                    horizontal=True,
                 )
 
-                # Add a divider
-                st.markdown("---")
-
-                # Centered button
-                button_col1, button_col2, button_col3 = st.columns([1, 2, 1])
-                with button_col2:
-                    submit_button = st.button(
-                        "🔮 Predict Income", use_container_width=True
+                with st.container():
+                    st.markdown("##### 👪 Family Status")
+                    marital_status = st.selectbox(
+                        "Marital Status",
+                        [
+                            "Married-civ-spouse",
+                            "Divorced",
+                            "Never-married",
+                            "Separated",
+                            "Widowed",
+                            "Married-spouse-absent",
+                            "Married-AF-spouse",
+                        ],
+                        help="Current marital status",
+                    )
+                    relationship = st.selectbox(
+                        "Relationship",
+                        [
+                            "Wife",
+                            "Own-child",
+                            "Husband",
+                            "Not-in-family",
+                            "Other-relative",
+                            "Unmarried",
+                        ],
+                        help="Relationship status in household",
                     )
 
-                # Results section
-                if submit_button and self.model is not None:
-                    # Show progress
-                    with st.spinner("Processing your data..."):
-                        progress_bar = st.progress(0)
-                        for i in range(100):
-                            # Simulate computation
-                            time.sleep(0.01)
-                            progress_bar.progress(i + 1)
-
-                        # Make actual prediction
-                        processed_data = self._preprocess_data(input_data)
-
-                        # Remove progress after completion
-                        progress_bar.empty()
-
-                    # Debug options with expanders
-                    debug_col1, debug_col2 = st.columns(2)
-                    with debug_col1:
-                        with st.expander("🔍 Show Input Features"):
-                            st.write("Features before processing:")
-                            st.dataframe(input_data, use_container_width=True)
-
-                    with debug_col2:
-                        with st.expander("🔍 Show Processed Features"):
-                            st.write("Features after processing:")
-                            st.dataframe(processed_data, use_container_width=True)
-
-                    # Display results
-                    st.markdown("---")
-                    self._display_results(processed_data)
-
-        with tab2:
-            # About the model tab content
-            st.header("About This Model")
-
-            # Create three columns for stats
-            stat1, stat2, stat3 = st.columns(3)
-            with stat1:
-                st.metric(label="Accuracy", value="83%", delta="2.5%")
-            with stat2:
-                st.metric(label="Precision", value="74%", delta="1.7%")
-            with stat3:
-                st.metric(label="Recall", value="65%", delta="-0.5%")
-
-            # Model information
-            st.subheader("Model Details")
-            st.write("""
-            This application uses a Support Vector Machine (SVM) model trained on the UCI Adult Census Income dataset. 
-            The model predicts whether an individual's income exceeds $50,000 per year based on census data.
-            """)
-
-            # Feature groups
-            st.subheader("Features Used")
-            feature_col1, feature_col2 = st.columns(2)
-
-            with feature_col1:
-                st.markdown("**Demographics**")
-                st.markdown("- Age\n- Gender\n- Race\n- Native country")
-
-                st.markdown("**Education**")
-                st.markdown("- Education level\n- Years of education")
-
-            with feature_col2:
-                st.markdown("**Employment**")
-                st.markdown("- Occupation\n- Work class\n- Hours worked per week")
-
-                st.markdown("**Financial & Personal**")
-                st.markdown(
-                    "- Capital gain\n- Capital loss\n- Marital status\n- Relationship"
+                native_country = st.selectbox(
+                    "Native Country",
+                    [
+                        "United-States",
+                        "Cambodia",
+                        "England",
+                        "Puerto-Rico",
+                        "Canada",
+                        "Germany",
+                        "Outlying-US(Guam-USVI-etc)",
+                        "India",
+                        "Japan",
+                        "Greece",
+                        "South",
+                        "China",
+                        "Cuba",
+                        "Iran",
+                        "Honduras",
+                        "Philippines",
+                        "Italy",
+                        "Poland",
+                        "Jamaica",
+                        "Vietnam",
+                        "Mexico",
+                        "Portugal",
+                        "Ireland",
+                        "France",
+                        "Dominican-Republic",
+                        "Laos",
+                        "Ecuador",
+                        "Taiwan",
+                        "Haiti",
+                        "Columbia",
+                        "Hungary",
+                        "Guatemala",
+                        "Nicaragua",
+                        "Scotland",
+                        "Thailand",
+                        "Yugoslavia",
+                        "El-Salvador",
+                        "Trinadad&Tobago",
+                        "Peru",
+                        "Hong",
+                        "Holand-Netherlands",
+                    ],
+                    help="Country of origin",
                 )
 
-            # Disclaimer
-            st.warning(
-                "This is for educational purposes only and should not be used for financial decisions."
+            with col2:
+                st.markdown("##### 🎓 Education")
+                education = st.selectbox(
+                    "Education Level",
+                    [
+                        "Bachelors",
+                        "Some-college",
+                        "11th",
+                        "HS-grad",
+                        "Prof-school",
+                        "Assoc-acdm",
+                        "Assoc-voc",
+                        "9th",
+                        "7th-8th",
+                        "12th",
+                        "Masters",
+                        "Doctorate",
+                        "10th",
+                        "1st-4th",
+                        "5th-6th",
+                        "Preschool",
+                    ],
+                    help="Highest level of education completed",
+                )
+                education_num = st.number_input(
+                    "Years of Education",
+                    min_value=1,
+                    max_value=20,
+                    value=13,
+                    help="Years of education completed",
+                )
+
+                with st.container():
+                    st.markdown("##### 💼 Employment")
+                    workclass = st.selectbox(
+                        "Work Class",
+                        [
+                            "Private",
+                            "Self-emp-not-inc",
+                            "Self-emp-inc",
+                            "Federal-gov",
+                            "Local-gov",
+                            "State-gov",
+                            "Without-pay",
+                            "Never-worked",
+                        ],
+                        help="Type of employer",
+                    )
+                    occupation = st.selectbox(
+                        "Occupation",
+                        [
+                            "Tech-support",
+                            "Craft-repair",
+                            "Other-service",
+                            "Sales",
+                            "Exec-managerial",
+                            "Prof-specialty",
+                            "Handlers-cleaners",
+                            "Machine-op-inspct",
+                            "Adm-clerical",
+                            "Farming-fishing",
+                            "Transport-moving",
+                            "Priv-house-serv",
+                            "Protective-serv",
+                            "Armed-Forces",
+                        ],
+                        help="Type of work you do",
+                    )
+                    hours_per_week = st.number_input(
+                        "Hours per week",
+                        min_value=1,
+                        max_value=168,
+                        value=40,
+                        help="Average hours worked per week",
+                    )
+
+                st.markdown("##### 💰 Financial Factors")
+                fnlwgt = st.number_input(
+                    "Final Weight",
+                    min_value=0,
+                    value=200000,
+                    help="Census weighting factor (you can leave as default)",
+                )
+
+                cap_gain_col, cap_loss_col = st.columns(2)
+
+                with cap_gain_col:
+                    capital_gain = st.number_input(
+                        "Capital Gain ($)",
+                        min_value=0,
+                        max_value=100000,
+                        value=0,
+                        help="Income from investment sources",
+                    )
+
+                with cap_loss_col:
+                    capital_loss = st.number_input(
+                        "Capital Loss ($)",
+                        min_value=0,
+                        max_value=10000,
+                        value=0,
+                        help="Losses from investment sources",
+                    )
+
+            # Return input data as DataFrame
+            return pd.DataFrame(
+                [
+                    {
+                        "age": age,
+                        "workclass": workclass,
+                        "fnlwgt": fnlwgt,
+                        "education": education,
+                        "education-num": education_num,
+                        "occupation": occupation,
+                        "marital-status": marital_status,
+                        "relationship": relationship,
+                        "race": race,
+                        "sex": gender,
+                        "capital-gain": capital_gain,
+                        "capital-loss": capital_loss,
+                        "hours-per-week": hours_per_week,
+                        "native-country": native_country,
+                    }
+                ]
             )
 
-    def _preprocess_data(self, input_data):
+    def _predict_with_model(self, input_data, model_type="svm"):
+        """Make prediction with specified model"""
+        # Determine which model and scaler to use
+        if model_type == "svm":
+            model = self.svm_model
+            scaler = self.svm_scaler
+            model_name = "Support Vector Machine"
+        else:
+            model = self.rf_model
+            scaler = self.rf_scaler
+            model_name = "Random Forest"
+
+        # Centered button
+        button_col1, button_col2, button_col3 = st.columns([1, 2, 1])
+        with button_col2:
+            submit_button = st.button(
+                f"🔮 Predict with {model_name}",
+                key=f"predict_{model_type}",
+                use_container_width=True,
+            )
+
+        # Results section
+        if submit_button and model is not None:
+            # Show progress
+            with st.spinner(f"Processing your data with {model_name}..."):
+                progress_bar = st.progress(0)
+                for i in range(100):
+                    # Simulate computation
+                    time.sleep(0.01)
+                    progress_bar.progress(i + 1)
+
+                # Make actual prediction
+                processed_data = self._preprocess_data(input_data, scaler)
+
+                # Remove progress after completion
+                progress_bar.empty()
+
+            # Debug options with expanders
+            debug_col1, debug_col2 = st.columns(2)
+            with debug_col1:
+                with st.expander("🔍 Show Input Features"):
+                    st.write("Features before processing:")
+                    st.dataframe(input_data, use_container_width=True)
+
+            with debug_col2:
+                with st.expander("🔍 Show Processed Features"):
+                    st.write("Features after processing:")
+                    st.dataframe(processed_data, use_container_width=True)
+
+            # Display results
+            st.markdown("---")
+            self._display_results(processed_data, model, model_name)
+
+    def _preprocess_data(self, input_data, scaler):
+        """Preprocess input data for model prediction"""
         features_categorical = [
             "workclass",
             "education",
@@ -448,20 +418,20 @@ class ML_implement_viewset:
 
         df = input_data.copy()
 
-        # Ensure the same column order as training data
-        df = df[self.scaler.feature_names_in_]
+        # Ensure we only use features expected by the model
+        if scaler is not None and hasattr(scaler, "feature_names_in_"):
+            df = df[scaler.feature_names_in_]
 
-        # Process categorical features
+        # Convert categorical features
         for col in features_categorical:
             if col in df.columns:
                 df[col] = self._map_categorical_feature(df[col])
 
-        # Convert to int
         df = df.astype(int)
 
-        # Scale the data
-        if self.scaler is not None:
-            scaled_data = self.scaler.transform(df)
+        # Scale features if scaler is available
+        if scaler is not None:
+            scaled_data = scaler.transform(df)
             df = pd.DataFrame(scaled_data, columns=df.columns)
 
         return df
@@ -472,46 +442,39 @@ class ML_implement_viewset:
         mapping = dict(zip(unique_values, range(1, len(unique_values) + 1)))
         return feature_series.map(mapping)
 
-    def _display_results(self, processed_data):
-        st.header("🔮 Prediction Results")
+    def _display_results(self, processed_data, model, model_name):
+        """Display prediction results"""
+        st.header(f"🔮 {model_name} Prediction Results")
 
-        if hasattr(self.model, "predict_proba"):
-            probability = self.model.predict_proba(processed_data)
+        if hasattr(model, "predict_proba"):
+            probability = model.predict_proba(processed_data)
 
-            # Create a container for results
             results_container = st.container()
 
             with results_container:
-                # Use columns for result display
                 res_col1, res_col2 = st.columns([2, 3])
 
                 with res_col1:
-                    # Prominent display of result
                     if probability[0][1] > probability[0][0]:
                         st.success("##### Income prediction: >$50K")
-                        # Use metrics to show probability
                         st.metric(
                             label="Probability of >$50K",
                             value=f"{probability[0][1]:.1%}",
                         )
                     else:
                         st.info("##### Income prediction: ≤$50K")
-                        # Use metrics to show probability
                         st.metric(
                             label="Probability of ≤$50K",
                             value=f"{probability[0][0]:.1%}",
                         )
 
                 with res_col2:
-                    # Enhanced visualization
                     fig, ax = plt.subplots(figsize=(8, 4))
                     labels = ["≤$50K", ">$50K"]
                     colors = ["#3498db", "#2ecc71"]
 
-                    # Create bars with better styling
                     bars = ax.bar(labels, probability[0], color=colors, width=0.6)
 
-                    # Add value labels on top of bars
                     for bar, prob in zip(bars, probability[0]):
                         height = bar.get_height()
                         ax.text(
@@ -523,16 +486,15 @@ class ML_implement_viewset:
                             fontweight="bold",
                         )
 
-                    # Improve chart styling
                     ax.set_ylabel("Probability", fontsize=12)
-                    ax.set_title("Income Prediction Probability", fontsize=14)
-                    ax.set_ylim(0, 1.1)  # Add space for labels
+                    ax.set_title(
+                        f"{model_name} Income Prediction Probability", fontsize=14
+                    )
+                    ax.set_ylim(0, 1.1)
 
-                    # Remove spines
                     ax.spines["top"].set_visible(False)
                     ax.spines["right"].set_visible(False)
 
-                    # Format y-axis as percentage
                     ax.yaxis.set_major_formatter(
                         plt.FuncFormatter(lambda x, _: "{:.0%}".format(x))
                     )
@@ -540,14 +502,12 @@ class ML_implement_viewset:
                     plt.tight_layout()
                     st.pyplot(fig)
 
-            # Add interpretation
             st.subheader("What Does This Mean?")
 
-            # Use an expander for detailed explanation
             with st.expander("See Interpretation", expanded=True):
                 if probability[0][1] > probability[0][0]:
-                    st.write("""
-                    Based on the information you provided, our model predicts that your income profile 
+                    st.write(f"""
+                    Based on the information you provided, our {model_name} model predicts that your income profile 
                     matches patterns typically associated with earnings **above $50,000 per year**.
                     
                     Key factors that likely influenced this prediction include:
@@ -556,8 +516,8 @@ class ML_implement_viewset:
                     - Your weekly working hours
                     """)
                 else:
-                    st.write("""
-                    Based on the information you provided, our model predicts that your income profile 
+                    st.write(f"""
+                    Based on the information you provided, our {model_name} model predicts that your income profile 
                     matches patterns typically associated with earnings **at or below $50,000 per year**.
                     
                     Key factors that likely influenced this prediction include:
@@ -571,9 +531,73 @@ class ML_implement_viewset:
                 )
 
         else:
-            # For models without probability output
-            prediction = self.model.predict(processed_data)
+            prediction = model.predict(processed_data)
             if prediction[0] == 1:
                 st.success("Income prediction: >$50K")
             else:
                 st.info("Income prediction: ≤$50K")
+
+    def _display_model_info(self):
+        """Display information about the models"""
+        st.header("About These Models")
+
+        # Create tabs for each model's information
+        svm_tab, rf_tab = st.tabs(["Support Vector Machine", "Random Forest"])
+
+        with svm_tab:
+            # Create three columns for stats
+            stat1, stat2, stat3 = st.columns(3)
+            with stat1:
+                st.metric(label="Accuracy", value="83%", delta="2.5%")
+            with stat2:
+                st.metric(label="Precision", value="74%", delta="1.7%")
+            with stat3:
+                st.metric(label="Recall", value="65%", delta="-0.5%")
+
+            # Model information
+            st.subheader("SVM Model Details")
+            st.write("""
+            This Support Vector Machine (SVM) model was trained on the UCI Adult Census Income dataset. 
+            SVMs work by finding the hyperplane that best separates the two income classes in a high-dimensional space.
+            """)
+
+        with rf_tab:
+            # Create three columns for stats
+            stat1, stat2, stat3 = st.columns(3)
+            with stat1:
+                st.metric(label="Accuracy", value="85%", delta="3.2%")
+            with stat2:
+                st.metric(label="Precision", value="77%", delta="2.1%")
+            with stat3:
+                st.metric(label="Recall", value="68%", delta="0.8%")
+
+            # Model information
+            st.subheader("Random Forest Model Details")
+            st.write("""
+            This Random Forest model was trained on the UCI Adult Census Income dataset. 
+            Random Forests combine multiple decision trees to create a robust classifier that's less prone to overfitting.
+            """)
+
+        # Common information for both models
+        st.subheader("Features Used")
+        feature_col1, feature_col2 = st.columns(2)
+
+        with feature_col1:
+            st.markdown("**Demographics**")
+            st.markdown("- Age\n- Gender\n- Race\n- Native country")
+
+            st.markdown("**Education**")
+            st.markdown("- Education level\n- Years of education")
+
+        with feature_col2:
+            st.markdown("**Employment**")
+            st.markdown("- Occupation\n- Work class\n- Hours worked per week")
+
+            st.markdown("**Financial & Personal**")
+            st.markdown(
+                "- Capital gain\n- Capital loss\n- Marital status\n- Relationship"
+            )
+
+        st.warning(
+            "These models are for educational purposes only and should not be used for financial decisions."
+        )

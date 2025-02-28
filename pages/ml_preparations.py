@@ -14,22 +14,29 @@ class ML_prepare_viewset:
             [
                 "🌐การเตรียมข้อมูล",
                 "🗳️ขั้นตอนการเทรน Model SVM",
-                "🗳️ขั้นตอนการเทรน Model K-Mean Clustering",
+                "🗳️ขั้นตอนการเทรน Model RandomForest",
             ]
         )
         with menu[0]:
             self.dataset_preparation()
         with menu[1]:
             self.svm_model_training()
+            st.markdown("""---""")
+            self.load_model_and_scaler()
         with menu[2]:
-            self.kmean_model_training()
+            self.rf_model_training()
+            st.markdown("""---""")
+            self.load_model_and_scaler()
 
     def dataset_preparation(self):
         st.header("🔍 Data Preparation")
-        st.write(
-            'สำหรับขั้นตอนการเตรียมข้อมูลในการเทรน models ผมได้ค้นหา datasets ใน kraggle และ archive.ics.uci.edu ผมได้เลือกข้อมูล "Census Income"'
+        st.markdown(
+            """
+            สำหรับขั้นตอนการเตรียมข้อมูลในการเทรน models ผมได้ค้นหา datasets ใน [<span style='color:blue; text-decoration:none'>Kaggle</span>](https://www.kaggle.com/) และ [<span style='color:blue; text-decoration:none'>UCI</span>](https://archive.ics.uci.edu/) ผมได้เลือกข้อมูล
+            "[<span style='color:orange; text-decoration:none; font-weight:bold'>Census Income</span>](https://archive.ics.uci.edu/dataset/2/adult)"
+            """,
+            unsafe_allow_html=True,
         )
-
         with st.expander("📊 รายละเอียดชุดข้อมูล (Dataset Details)"):
             col1, col2 = st.columns(2)
             with col1:
@@ -41,7 +48,7 @@ class ML_prepare_viewset:
 
         st.header("🤖 Model Selection")
         st.markdown(
-            "เพื่อทำการเทรนในโมเดล **SVM และ K-Mean Clustering** เพื่อทำนายเงินเดือนจาก input ที่รับมาว่าจะได้มากกว่ารายได้มากกว่า 50k หรือไม่"
+            "เพื่อทำการเทรนในโมเดล **SVM และ RandomForestClassifier** เพื่อทำนายเงินเดือนจาก input ที่รับมาว่าจะได้มากกว่ารายได้มากกว่า 50k หรือไม่"
         )
 
         st.header("📋 รายละเอียดชุดข้อมูล Census Income")
@@ -121,7 +128,7 @@ class ML_prepare_viewset:
         * ตารางด้านบนถูกแปลงจากไฟล์ `adult.names` เพื่อให้ง่ายต่อการเข้าใจความหมายของแต่ละ Features
         * ข้อมูลชุดนี้ใช้สำหรับทำนายว่ารายได้ของบุคคลจะมากกว่า 50,000 ดอลลาร์ต่อปีหรือไม่
         * ชุดข้อมูลแบ่งเป็น `adult.data` สำหรับการเทรนโมเดล และ `adult.test` สำหรับการทดสอบโมเดล
-        * โมเดล SVM และ K-Mean Clustering จะถูกเทรนด้วยข้อมูลชุดนี้
+        * โมเดล SVM และ RandomForestClassifier จะถูกเทรนด้วยข้อมูลชุดนี้
         """)
 
         st.header("⚙️ ขั้นตอนการเตรียมข้อมูล (Data Preparation Process)")
@@ -351,107 +358,149 @@ class ML_prepare_viewset:
         st.subheader("🎉🎉🎉 เรียบร้อยครับสำหรับขั้นตอนการเตรียมพร้อม")
 
     def svm_model_training(self):
-        st.header("🌟 การเทรน Model SVM")
+        st.header("🌟 การเทรน Model K-Mean Clustering")
         st.markdown("---")
-        st.subheader("🪛Code สำหรับการเทรน Model SVM")
+        st.subheader("🪛Code สำหรับการเทรน Model K-Mean Clustering")
         st.markdown("---")
         st.subheader("🖥️Import Library")
         st.code("""
-                import torch
-                import torch.nn as nn
-                from torch.utils.data import DataLoader, TensorDataset
-                from sklearn.preprocessing import StandardScaler, LabelEncoder
-                from sklearn.model_selection import train_test_split
+                from sklearn.svm import SVC
+                from sklearn.preprocessing import StandardScaler
+                from sklearn.metrics import classification_report, accuracy_score
+                import joblib
             
         """)
         st.subheader("🖥️Code สำหรับการเตรียมข้อมูล")
         st.code("""
-                  scaler = StandardScaler()
+                scaler = StandardScaler()  
                 X_train_scaled = scaler.fit_transform(X_train)
                 X_test_scaled = scaler.transform(X_test)
-
-
-                X_train_final, X_val, y_train_final, y_val = train_test_split(
-                    X_train_scaled, y_train, test_size=0.3, random_state=42
-                )
-
-                label_encoder = LabelEncoder()
-                y_train_encoded = label_encoder.fit_transform(y_train_final)
-                y_val_encoded = label_encoder.transform(y_val)
-                y_test_encoded = label_encoder.transform(y_test)
-
-
-                X_train_tensor = torch.FloatTensor(X_train_final)
-                y_train_tensor = torch.LongTensor(y_train_encoded)
-                X_val_tensor = torch.FloatTensor(X_val)
-                y_val_tensor = torch.LongTensor(y_val_encoded)
-                X_test_tensor = torch.FloatTensor(X_test_scaled)
-
-                train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
-                train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
-                val_dataset = TensorDataset(X_val_tensor, y_val_tensor)
-                val_loader = DataLoader(val_dataset, batch_size=64)
         """)
-        st.subheader("🛠️สร้าง Model SVM ด้วย PyTorch และกำหนด learning rate")
+        st.subheader("🛠️สร้าง Model SVM ด้วย sklearn และทำการ hyperparameter tuning")
         st.markdown("---")
-        st.info("*Learning rate ที่เหมาะสมและให้ผลลัพธ์ดีที่สุดจากการ tuning คือ 0.01*")
         st.code("""
-                class SVM(nn.Module):
-                    def __init__(self, input_dim):
-                        super(SVM, self).__init__()
-                        self.linear = nn.Linear(input_dim, 2) 
-                        
-                    def forward(self, x):
-                        return self.linear(x)
-                input_dim = X_train_scaled.shape[1] # จํานวน feature
-                model = SVM(input_dim)
-                criterion = nn.MultiMarginLoss()  # จัดการ missclassification
-                optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
+                svm = SVC(kernel='rbf',  
+                        C=1.0,         
+                        gamma='scale',
+                        probability=True,
+                        random_state=42)
+
+                if len(y_train.shape) > 1: # ถ้า y_train มี shape มากกว่า 1
+                    y_train = y_train.flatten()
+                if len(y_test.shape) > 1: # ถ้า y_test มี shape มากกว่า 1
+                    y_test = y_test.flatten()
                 """)
         st.markdown("---")
-        st.subheader("🖥️Code สำหรับการเทรน Model SVM")
+        st.subheader(
+            "🖥️Code สำหรับการเทรน Model SVM และ ✍🏻ประเมิน Model SVM และ Save model"
+        )
         st.code("""
-                for epoch in range(100):
-                    model.train()
-                    for inputs, labels in train_loader:
-                        optimizer.zero_grad()
-                        outputs = model(inputs)
-                        loss = criterion(outputs, labels)
-                        loss.backward()
-                        optimizer.step()
-                    
-                    model.eval()
-                    all_predictions = []
-                    all_labels = []
-                    with torch.no_grad():
-                        for inputs, labels in val_loader:
-                            outputs = model(inputs)
-                            _, predicted = torch.max(outputs.data, 1)
-                            all_predictions.extend(predicted.cpu().numpy())
-                            all_labels.extend(labels.cpu().numpy())
-                    
-
-                    val_accuracy = accuracy_score(all_labels, all_predictions) * 100
-                    val_precision = precision_score(all_labels, all_predictions, average='weighted') * 100
-                    val_recall = recall_score(all_labels, all_predictions, average='weighted') * 100
-                    val_f1 = f1_score(all_labels, all_predictions, average='weighted') * 100
-                        
-                    if (epoch+1) % 10 == 0:
-                        print(f'Epoch {epoch+1}, Validation Accuracy: {val_accuracy:.2f}%')
-
-                    """)
-        st.markdown("---")
-        st.subheader("✍🏻ประเมิน Model SVM (สรุปผล) และทำการ save model")
-        st.code("""
-                model.eval()
-                with torch.no_grad():
-                    outputs = model(X_test_tensor)
-                    _, predicted = torch.max(outputs.data, 1)
-                    test_predictions = predicted.cpu().numpy()
-                    test_accuracy = accuracy_score(y_test_encoded, test_predictions)
-                    print(f'Test Accuracy: {test_accuracy:.2f}%')
-                torch.save(model.state_dict(),"../exported_models/svm_model")
+                svm.fit(X_train_scaled, y_train)
+                accuracy = accuracy_score(y_test, y_pred)
+                print(f"Test accuracy: {accuracy:.4f}")
+                print("\\nClassification Report:")
+                print(classification_report(y_test, y_pred))
+                probabilities = svm.predict_proba(X_test_scaled)
+                joblib.dump(svm, '../exported_models/svm/svm_income_model.pkl')
+                joblib.dump(scaler, '../exported_models/svm/svm_income_scaler.pkl')
                 """)
+        st.subheader("🎉🎉🎉 เรียบร้อยครับสำหรับขั้นตอนการเทรน Model SVM ")
 
-    def kmean_model_training(self):
-        st.header("🌟 การเทรน Model K-Mean Clustering")
+    def rf_model_training(self):
+        st.header("🌟 การเทรน Model RandomForestClassifier")
+        st.markdown("---")
+        st.subheader("🪛Code สำหรับการเทรน RandomForestClassifier")
+        st.markdown("---")
+        st.subheader("🖥️Import Library")
+        st.code("""
+                from sklearn.preprocessing import StandardScaler
+                from sklearn.ensemble import RandomForestClassifier
+                from sklearn.metrics import classification_report, accuracy_score
+                import joblib
+            
+        """)
+        st.subheader("🖥️Code สำหรับการเตรียมข้อมูล")
+        st.code("""
+                scaler = StandardScaler()
+                X_train_scaled = scaler.fit_transform(X_train)
+                X_test_scaled = scaler.transform(X_test)
+                if len(y_train.shape) > 1:
+                    y_train = y_train.flatten()
+                if len(y_test.shape) > 1: 
+                    y_test = y_test.flatten()
+        """)
+        st.subheader("🛠️สร้าง Model RF ด้วย sklearn และทำการ hyperparameter tuning")
+        st.markdown("---")
+        st.code("""
+                model = RandomForestClassifier(n_estimators=100, random_state=50, class_weight="balanced")
+                """)
+        st.markdown("---")
+        st.subheader(
+            "🖥️Code สำหรับการเทรน Model RF และ ✍🏻ประเมิน Model RF และ Save model"
+        )
+        st.code("""
+                    model.fit(X_train_scaled, y_train)
+                    rfc_result_trained = model.predict(X_test_scaled)
+                    accuracy = accuracy_score(y_test, rfc_result_trained)
+                    print(f"Test accuracy: {accuracy:.4f}")
+                    print("\\nClassification Report:")
+                    print(classification_report(y_test, rfc_result_trained))
+                    joblib.dump(model, '../exported_models/random_forest/rf_income_model.pkl')
+                    joblib.dump(scaler,  '../exported_models/random_forest/_income_scaler.pkl') 
+
+                """)
+        st.subheader("🎉🎉🎉 เรียบร้อยครับสำหรับขั้นตอนการเทรน Model RandomForestClassifier")
+
+    def load_model_and_scaler(self):
+        st.header("🌟 การโหลด Model และ Scaler ไปใช้งาน")
+        st.markdown("---")
+        st.subheader("🖥️Code สำหรับการโหลด Model และ Scaler")
+        st.code("""
+                def load_model(model_path, scaler_path=None):
+                    try:
+                        # Try loading model with joblib first
+                        try:
+                            model = joblib.load(model_path)
+                        except Exception as e1:
+                            st.warning(f"Could not load model with joblib: {str(e1)}")
+                            with open(model_path, "rb") as f:
+                                model = pickle.load(f)
+
+                        # Load scaler if provided
+                        scaler = None
+                        if scaler_path:
+                            if not os.path.exists(scaler_path):
+                                st.error(f"Scaler file not found at: {scaler_path}")
+                            else:
+                                try:
+                                    scaler = joblib.load(scaler_path)
+                                except Exception as e2:
+                                    st.warning(f"Could not load scaler with joblib: {str(e2)}")
+                                    with open(scaler_path, "rb") as f:
+                                        scaler = pickle.load(f)
+
+                        return model, scaler
+
+                    except Exception as e:
+                        st.error(f"Error loading model: {str(e)}")
+                        return None, None
+
+                """)
+        st.markdown("---")
+        st.subheader("ตัวอย่างการนำไปใช้งาน")
+        st.code("""
+                class ML_implement_viewset:
+                    def __init__(self):
+                        # Load models
+                        self.svm_model, self.svm_scaler = load_model(
+                            "exported_models/svm/svm_income_model.pkl",
+                            "exported_models/svm/svm_income_scaler.pkl",
+                        )
+                        self.rf_model, self.rf_scaler = load_model(
+                            "exported_models/rf/rf_income_model.pkl",
+                            "exported_models/rf/rf_income_scaler.pkl",
+                        )
+                        ...
+                """)
+        st.subheader("🎉🎉🎉 เรียบร้อยครับสำหรับขั้นตอนการโหลด Model และ Scaler")
+        st.markdown("---")

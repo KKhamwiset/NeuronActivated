@@ -13,11 +13,11 @@ st.set_page_config(
     page_icon="🧠",
     layout="centered",
     initial_sidebar_state="auto",
-    menu_items=None
+    menu_items=None,
 )
 
-# Custom CSS to enhance Bootstrap
-st.markdown("""
+st.markdown(
+    """
 <style>
     .stButton>button {
         width: 100%;
@@ -33,12 +33,15 @@ st.markdown("""
         margin-right: 10px;
     }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
+
 
 class PageHandler:
     def __init__(self):
         pass
-    
+
     def show_ml_implementation(self):
         show = ML_implement_viewset()
         show.app()
@@ -59,26 +62,27 @@ class PageHandler:
         show = Ref_viewset()
         show.app()
 
-# Sidebar selection
+
 selected = create_sidebar("Home")
 page_handler = PageHandler()
-# Initialize session state for showing the home page
-if 'show_home' not in st.session_state or selected == "Home":
+
+if "show_home" not in st.session_state or selected == "Home":
     st.session_state.show_home = True
 else:
     st.session_state.show_home = False
 
-# Main title for the home page
+
 if st.session_state.show_home:
-    # Include Bootstrap icons
     st.markdown(
         """
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-        """, unsafe_allow_html=True
+        """,
+        unsafe_allow_html=True,
     )
-    
+
     # Main header with Bootstrap classes
-    st.markdown("""
+    st.markdown(
+        """
     <div class="container mt-4">
         <div class="row">
             <div class="col-md-12">
@@ -90,12 +94,15 @@ if st.session_state.show_home:
             </div>
         </div>
     </div>
-    """, unsafe_allow_html=True)
-    
+    """,
+        unsafe_allow_html=True,
+    )
+
     col1, col2 = st.columns(2)
-    
+
     with col1:
-        st.markdown("""
+        st.markdown(
+            """
         <div class="card mb-4 shadow-sm h-100">
             <div class="card-body">
                 <h5 class="card-title">
@@ -104,7 +111,9 @@ if st.session_state.show_home:
                 <p class="card-text">Explore various machine learning algorithms and implementations with our step-by-step guides.</p>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
         ml_col1, ml_col2 = st.columns(2)
         with ml_col1:
             if st.button("Implementation", key="ml_impl"):
@@ -116,9 +125,10 @@ if st.session_state.show_home:
                 st.session_state.show_home = False
                 st.session_state.current_page = "ML Preparations"
                 st.rerun()
-    
+
     with col2:
-        st.markdown("""
+        st.markdown(
+            """
         <div class="card mb-4 shadow-sm h-100">
             <div class="card-body">
                 <h5 class="card-title">
@@ -127,10 +137,15 @@ if st.session_state.show_home:
                 <p class="card-text">Dive into neural network architectures and learn how to build your own models from scratch.</p>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
         nn_col1, nn_col2 = st.columns(2)
         with nn_col1:
-            if st.button("Implementation", key="nn_impl",):
+            if st.button(
+                "Implementation",
+                key="nn_impl",
+            ):
                 st.session_state.show_home = False
                 st.session_state.current_page = "Neuron Implementation"
                 st.rerun()
@@ -139,8 +154,9 @@ if st.session_state.show_home:
                 st.session_state.show_home = False
                 st.session_state.current_page = "Neuron Preparations"
                 st.rerun()
-    
-    st.markdown("""
+
+    st.markdown(
+        """
     <div class="container">
         <div class="row mt-4">
             <div class="col-md-12">
@@ -152,9 +168,12 @@ if st.session_state.show_home:
             </div>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
-    st.markdown("""
+    st.markdown(
+        """
     <div class="container">
         <div class="card shadow-sm">
             <div class="card-header">
@@ -162,30 +181,39 @@ if st.session_state.show_home:
             </div>
         </div>
     </div>
-    """, unsafe_allow_html=True)
-    
+    """,
+        unsafe_allow_html=True,
+    )
+
     tab1, tab2 = st.tabs(["Latest Updates", "Most Popular"])
-    
+
     with tab1:
-        st.markdown("""
+        st.markdown(
+            """
         <ul class="list-group list-group-flush">
             <li class="list-group-item">SVM Model Implementation - Income prediction</li>
             <li class="list-group-item">Neural Network Visualization Tool</li>
             <li class="list-group-item">Data Preprocessing Guide</li>
         </ul>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with tab2:
-        st.markdown("""
+        st.markdown(
+            """
         <ul class="list-group list-group-flush">
             <li class="list-group-item">Machine Learning Basics</li>
             <li class="list-group-item">Neural Network Tutorial</li>
             <li class="list-group-item">Feature Engineering Techniques</li>
         </ul>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     # Footer with Bootstrap
-    st.markdown("""
+    st.markdown(
+        """
     <div class="container">
         <div class="row mt-5">
             <div class="col-md-12">
@@ -195,8 +223,9 @@ if st.session_state.show_home:
             </div>
         </div>
     </div>
-    """, unsafe_allow_html=True)
-
+    """,
+        unsafe_allow_html=True,
+    )
 
 
 if selected == "ML Implementation":
