@@ -1,0 +1,18 @@
+# header Streamlit_guide
+https://www.youtube.com/watch?v=hEPoto5xp3k Streamlit=Navigation=Bar
+https://youtu.be/GvRfFdymaFA?si=UENfqbx_ijMQMLsd Streamlit=Navigation=Bar
+# end_header
+# header Dataset
+https://archive.ics.uci.edu/dataset/2/adult Census=Income=Dataset
+# end_header
+# header Emoji
+https://emojipedia.org/
+# end_header
+# header Model_guide
+https://www.geeksforgeeks.org/deploy-a-machine-learning-model-using-streamlit-library How=to=use=streamlit=with=model
+https://www.datacamp.com/blog/supervised-machine-learning Difference=of=unsupervised=and=supervised=model
+https://www.datacamp.com/tutorial/random-forests-classifier-python RandomeForest=Model
+# end_header
+# header Styling
+https://claude.ai/ claudeAI
+# end_header
