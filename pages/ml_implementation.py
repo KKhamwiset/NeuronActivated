@@ -132,13 +132,13 @@ class ML_implement_viewset:
                 )
                 race = st.selectbox(
                     "Race",
-                    [
+                    sorted([
                         "White",
                         "Asian-Pac-Islander",
                         "Amer-Indian-Eskimo",
                         "Other",
                         "Black",
-                    ],
+                    ]),
                     help="Census racial category",
                 )
                 gender = st.radio(
@@ -152,7 +152,7 @@ class ML_implement_viewset:
                     st.markdown("##### 👪 Family Status")
                     marital_status = st.selectbox(
                         "Marital Status",
-                        [
+                        sorted([
                             "Married-civ-spouse",
                             "Divorced",
                             "Never-married",
@@ -160,25 +160,25 @@ class ML_implement_viewset:
                             "Widowed",
                             "Married-spouse-absent",
                             "Married-AF-spouse",
-                        ],
+                        ]),
                         help="Current marital status",
                     )
                     relationship = st.selectbox(
                         "Relationship",
-                        [
+                        sorted([
                             "Wife",
                             "Own-child",
                             "Husband",
                             "Not-in-family",
                             "Other-relative",
                             "Unmarried",
-                        ],
+                        ]),
                         help="Relationship status in household",
                     )
 
                 native_country = st.selectbox(
                     "Native Country",
-                    [
+                    sorted([
                         "United-States",
                         "Cambodia",
                         "England",
@@ -220,7 +220,7 @@ class ML_implement_viewset:
                         "Peru",
                         "Hong",
                         "Holand-Netherlands",
-                    ],
+                    ]),
                     help="Country of origin",
                 )
 
@@ -228,7 +228,7 @@ class ML_implement_viewset:
                 st.markdown("##### 🎓 Education")
                 education = st.selectbox(
                     "Education Level",
-                    [
+                    sorted([
                         "Bachelors",
                         "Some-college",
                         "11th",
@@ -245,7 +245,7 @@ class ML_implement_viewset:
                         "1st-4th",
                         "5th-6th",
                         "Preschool",
-                    ],
+                    ]),
                     help="Highest level of education completed",
                 )
                 education_num = st.number_input(
@@ -260,7 +260,7 @@ class ML_implement_viewset:
                     st.markdown("##### 💼 Employment")
                     workclass = st.selectbox(
                         "Work Class",
-                        [
+                        sorted([
                             "Private",
                             "Self-emp-not-inc",
                             "Self-emp-inc",
@@ -269,12 +269,12 @@ class ML_implement_viewset:
                             "State-gov",
                             "Without-pay",
                             "Never-worked",
-                        ],
+                        ]),
                         help="Type of employer",
                     )
                     occupation = st.selectbox(
                         "Occupation",
-                        [
+                        sorted([
                             "Tech-support",
                             "Craft-repair",
                             "Other-service",
@@ -289,7 +289,7 @@ class ML_implement_viewset:
                             "Priv-house-serv",
                             "Protective-serv",
                             "Armed-Forces",
-                        ],
+                        ]),
                         help="Type of work you do",
                     )
                     hours_per_week = st.number_input(
@@ -541,20 +541,17 @@ class ML_implement_viewset:
         """Display information about the models"""
         st.header("About These Models")
 
-        # Create tabs for each model's information
         svm_tab, rf_tab = st.tabs(["Support Vector Machine", "Random Forest"])
 
         with svm_tab:
-            # Create three columns for stats
             stat1, stat2, stat3 = st.columns(3)
             with stat1:
-                st.metric(label="Accuracy", value="83%", delta="2.5%")
+                st.metric(label="Accuracy", value="81%", delta="2.5%")
             with stat2:
                 st.metric(label="Precision", value="74%", delta="1.7%")
             with stat3:
                 st.metric(label="Recall", value="65%", delta="-0.5%")
 
-            # Model information
             st.subheader("SVM Model Details")
             st.write("""
             This Support Vector Machine (SVM) model was trained on the UCI Adult Census Income dataset. 
@@ -571,14 +568,11 @@ class ML_implement_viewset:
             with stat3:
                 st.metric(label="Recall", value="68%", delta="0.8%")
 
-            # Model information
             st.subheader("Random Forest Model Details")
             st.write("""
             This Random Forest model was trained on the UCI Adult Census Income dataset. 
             Random Forests combine multiple decision trees to create a robust classifier that's less prone to overfitting.
             """)
-
-        # Common information for both models
         st.subheader("Features Used")
         feature_col1, feature_col2 = st.columns(2)
 

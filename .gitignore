@@ -1,2 +1,3 @@
 env_*
 __pycache__/
+/data/traffic_light
