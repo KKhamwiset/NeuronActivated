@@ -50,13 +50,14 @@ class neuron_implement_viewset:
 
     def predict_fruit(self, image):
         if self.model is None:
-            if not self.load_cnn_model():
+            success = self.load_cnn_model()
+            if not success:
+                st.error("Failed to load the model. Cannot make predictions.")
                 return None
 
         processed_img = self.preprocess_image(image)
-
         predictions = self.model.predict(processed_img)
-
+        
         predicted_class_index = np.argmax(predictions[0])
         confidence = float(predictions[0][predicted_class_index])
 
