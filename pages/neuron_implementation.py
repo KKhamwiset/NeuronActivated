@@ -1,6 +1,21 @@
 import streamlit as st
 import numpy as np
 import tensorflow as tf
+from keras.layers import (
+    Conv2D,
+    MaxPooling2D,
+    Dropout,
+    Flatten,
+    Dense,
+    Activation,
+    BatchNormalization,
+    Input,
+    GlobalAveragePooling2D,
+)
+from keras.applications import MobileNetV2
+from keras.models import Sequential
+from keras.preprocessing.image import ImageDataGenerator, img_to_array, load_img
+from keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
 import joblib
 from PIL import Image
 import io
@@ -27,13 +42,50 @@ class neuron_implement_viewset:
 
     def load_cnn_model(self):
         try:
-            model_path = "exported_models/fruit_model.pkl"
-            if os.path.exists(model_path):
-                self.model = joblib.load(model_path)
-                return True
-            else:
-                st.error(f"Model not found at {model_path}. Please check the path.")
-                return False
+            baseModel = MobileNetV2(
+                weights="imagenet", include_top=False, input_shape=(224, 224, 3)
+            )
+            baseModel.trainable = False
+            self.model = Sequential(
+                [
+                    baseModel,
+                    GlobalAveragePooling2D(),
+                    Dense(
+                        128,
+                        activation="relu",
+                        kernel_regularizer=tf.keras.regularizers.l2(0.0001),
+                    ),
+                    BatchNormalization(),
+                    Dropout(0.3),
+                    Dense(
+                        64,
+                        activation="relu",
+                        kernel_regularizer=tf.keras.regularizers.l2(0.0001),
+                    ),
+                    BatchNormalization(),
+                    Dropout(0.3),
+                    Dense(
+                        32,
+                        activation="relu",
+                        kernel_regularizer=tf.keras.regularizers.l2(0.0001),
+                    ),
+                    Dense(10, activation="softmax"),
+                ]
+            )
+
+            self.model.compile(
+                optimizer="adam",
+                loss="sparse_categorical_crossentropy",
+                metrics=["accuracy"],
+            )
+
+            weights_path = "exported_models/fruit_model_weights.h5"
+            if os.path.exists(weights_path):
+                self.model.load_weights(weights_path)
+                print("Successfully loaded weights from", weights_path)
+            return True
+
+
         except Exception as e:
             st.error(f"Error loading model: {e}")
             return False
@@ -57,7 +109,7 @@ class neuron_implement_viewset:
 
         processed_img = self.preprocess_image(image)
         predictions = self.model.predict(processed_img)
-        
+
         predicted_class_index = np.argmax(predictions[0])
         confidence = float(predictions[0][predicted_class_index])
 
