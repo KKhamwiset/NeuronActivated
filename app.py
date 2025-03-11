@@ -185,32 +185,6 @@ if st.session_state.show_home:
         unsafe_allow_html=True,
     )
 
-    tab1, tab2 = st.tabs(["Latest Updates", "Most Popular"])
-
-    with tab1:
-        st.markdown(
-            """
-        <ul class="list-group list-group-flush">
-            <li class="list-group-item">SVM Model Implementation - Income prediction</li>
-            <li class="list-group-item">Neural Network Visualization Tool</li>
-            <li class="list-group-item">Data Preprocessing Guide</li>
-        </ul>
-        """,
-            unsafe_allow_html=True,
-        )
-
-    with tab2:
-        st.markdown(
-            """
-        <ul class="list-group list-group-flush">
-            <li class="list-group-item">Machine Learning Basics</li>
-            <li class="list-group-item">Neural Network Tutorial</li>
-            <li class="list-group-item">Feature Engineering Techniques</li>
-        </ul>
-        """,
-            unsafe_allow_html=True,
-        )
-
     # Footer with Bootstrap
     st.markdown(
         """

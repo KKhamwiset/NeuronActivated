@@ -132,13 +132,15 @@ class ML_implement_viewset:
                 )
                 race = st.selectbox(
                     "Race",
-                    sorted([
-                        "White",
-                        "Asian-Pac-Islander",
-                        "Amer-Indian-Eskimo",
-                        "Other",
-                        "Black",
-                    ]),
+                    sorted(
+                        [
+                            "White",
+                            "Asian-Pac-Islander",
+                            "Amer-Indian-Eskimo",
+                            "Other",
+                            "Black",
+                        ]
+                    ),
                     help="Census racial category",
                 )
                 gender = st.radio(
@@ -152,75 +154,81 @@ class ML_implement_viewset:
                     st.markdown("##### 👪 Family Status")
                     marital_status = st.selectbox(
                         "Marital Status",
-                        sorted([
-                            "Married-civ-spouse",
-                            "Divorced",
-                            "Never-married",
-                            "Separated",
-                            "Widowed",
-                            "Married-spouse-absent",
-                            "Married-AF-spouse",
-                        ]),
+                        sorted(
+                            [
+                                "Married-civ-spouse",
+                                "Divorced",
+                                "Never-married",
+                                "Separated",
+                                "Widowed",
+                                "Married-spouse-absent",
+                                "Married-AF-spouse",
+                            ]
+                        ),
                         help="Current marital status",
                     )
                     relationship = st.selectbox(
                         "Relationship",
-                        sorted([
-                            "Wife",
-                            "Own-child",
-                            "Husband",
-                            "Not-in-family",
-                            "Other-relative",
-                            "Unmarried",
-                        ]),
+                        sorted(
+                            [
+                                "Wife",
+                                "Own-child",
+                                "Husband",
+                                "Not-in-family",
+                                "Other-relative",
+                                "Unmarried",
+                            ]
+                        ),
                         help="Relationship status in household",
                     )
 
                 native_country = st.selectbox(
                     "Native Country",
-                    sorted([
-                        "United-States",
-                        "Cambodia",
-                        "England",
-                        "Puerto-Rico",
-                        "Canada",
-                        "Germany",
-                        "Outlying-US(Guam-USVI-etc)",
-                        "India",
-                        "Japan",
-                        "Greece",
-                        "South",
-                        "China",
-                        "Cuba",
-                        "Iran",
-                        "Honduras",
-                        "Philippines",
-                        "Italy",
-                        "Poland",
-                        "Jamaica",
-                        "Vietnam",
-                        "Mexico",
-                        "Portugal",
-                        "Ireland",
-                        "France",
-                        "Dominican-Republic",
-                        "Laos",
-                        "Ecuador",
-                        "Taiwan",
-                        "Haiti",
-                        "Columbia",
-                        "Hungary",
-                        "Guatemala",
-                        "Nicaragua",
-                        "Scotland",
-                        "Thailand",
-                        "Yugoslavia",
-                        "El-Salvador",
-                        "Trinadad&Tobago",
-                        "Peru",
-                        "Hong",
-                        "Holand-Netherlands",
-                    ]),
+                    sorted(
+                        [
+                            "United-States",
+                            "Cambodia",
+                            "England",
+                            "Puerto-Rico",
+                            "Canada",
+                            "Germany",
+                            "Outlying-US(Guam-USVI-etc)",
+                            "India",
+                            "Japan",
+                            "Greece",
+                            "South",
+                            "China",
+                            "Cuba",
+                            "Iran",
+                            "Honduras",
+                            "Philippines",
+                            "Italy",
+                            "Poland",
+                            "Jamaica",
+                            "Vietnam",
+                            "Mexico",
+                            "Portugal",
+                            "Ireland",
+                            "France",
+                            "Dominican-Republic",
+                            "Laos",
+                            "Ecuador",
+                            "Taiwan",
+                            "Haiti",
+                            "Columbia",
+                            "Hungary",
+                            "Guatemala",
+                            "Nicaragua",
+                            "Scotland",
+                            "Thailand",
+                            "Yugoslavia",
+                            "El-Salvador",
+                            "Trinadad&Tobago",
+                            "Peru",
+                            "Hong",
+                            "Holand-Netherlands",
+                        ]
+                    ),
                     help="Country of origin",
                 )
 
@@ -228,24 +236,26 @@ class ML_implement_viewset:
                 st.markdown("##### 🎓 Education")
                 education = st.selectbox(
                     "Education Level",
-                    sorted([
-                        "Bachelors",
-                        "Some-college",
-                        "11th",
-                        "HS-grad",
-                        "Prof-school",
-                        "Assoc-acdm",
-                        "Assoc-voc",
-                        "9th",
-                        "7th-8th",
-                        "12th",
-                        "Masters",
-                        "Doctorate",
-                        "10th",
-                        "1st-4th",
-                        "5th-6th",
-                        "Preschool",
-                    ]),
+                    sorted(
+                        [
+                            "Bachelors",
+                            "Some-college",
+                            "11th",
+                            "HS-grad",
+                            "Prof-school",
+                            "Assoc-acdm",
+                            "Assoc-voc",
+                            "9th",
+                            "7th-8th",
+                            "12th",
+                            "Masters",
+                            "Doctorate",
+                            "10th",
+                            "1st-4th",
+                            "5th-6th",
+                            "Preschool",
+                        ]
+                    ),
                     help="Highest level of education completed",
                 )
                 education_num = st.number_input(
@@ -260,36 +270,40 @@ class ML_implement_viewset:
                     st.markdown("##### 💼 Employment")
                     workclass = st.selectbox(
                         "Work Class",
-                        sorted([
-                            "Private",
-                            "Self-emp-not-inc",
-                            "Self-emp-inc",
-                            "Federal-gov",
-                            "Local-gov",
-                            "State-gov",
-                            "Without-pay",
-                            "Never-worked",
-                        ]),
+                        sorted(
+                            [
+                                "Private",
+                                "Self-emp-not-inc",
+                                "Self-emp-inc",
+                                "Federal-gov",
+                                "Local-gov",
+                                "State-gov",
+                                "Without-pay",
+                                "Never-worked",
+                            ]
+                        ),
                         help="Type of employer",
                     )
                     occupation = st.selectbox(
                         "Occupation",
-                        sorted([
-                            "Tech-support",
-                            "Craft-repair",
-                            "Other-service",
-                            "Sales",
-                            "Exec-managerial",
-                            "Prof-specialty",
-                            "Handlers-cleaners",
-                            "Machine-op-inspct",
-                            "Adm-clerical",
-                            "Farming-fishing",
-                            "Transport-moving",
-                            "Priv-house-serv",
-                            "Protective-serv",
-                            "Armed-Forces",
-                        ]),
+                        sorted(
+                            [
+                                "Tech-support",
+                                "Craft-repair",
+                                "Other-service",
+                                "Sales",
+                                "Exec-managerial",
+                                "Prof-specialty",
+                                "Handlers-cleaners",
+                                "Machine-op-inspct",
+                                "Adm-clerical",
+                                "Farming-fishing",
+                                "Transport-moving",
+                                "Priv-house-serv",
+                                "Protective-serv",
+                                "Armed-Forces",
+                            ]
+                        ),
                         help="Type of work you do",
                     )
                     hours_per_week = st.number_input(
