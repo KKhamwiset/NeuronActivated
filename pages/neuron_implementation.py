@@ -39,71 +39,51 @@ class neuron_implement_viewset:
         ]
         self.img_height = 224
         self.img_width = 224
-
+    def create_model():
+        baseModel = MobileNetV2(weights=None, include_top=False, input_shape=(224, 224, 3))
+        model = Sequential([
+            baseModel,
+            GlobalAveragePooling2D(),
+            Dense(128, activation="relu", kernel_regularizer=tf.keras.regularizers.l2(0.0001)),
+            BatchNormalization(),
+            Dropout(0.3),
+            Dense(64, activation="relu", kernel_regularizer=tf.keras.regularizers.l2(0.0001)),
+            BatchNormalization(),
+            Dropout(0.3),
+            Dense(32, activation="relu", kernel_regularizer=tf.keras.regularizers.l2(0.0001)),
+            Dense(10, activation="softmax"),
+        ])
+        model.compile(
+            loss="categorical_crossentropy",
+            optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+            metrics=["accuracy"],
+        )
+        return model
     def load_cnn_model(self):
         try:
             model_path = "exported_models/fruit_model.keras"
 
             if os.path.exists(model_path):
-                self.model = tf.keras.models.load_model(model_path)
-                print(f"Successfully loaded entire model from {model_path}")
-
-                dummy_input = np.zeros((1, self.img_height, self.img_width, 3))
-                _ = self.model.predict(dummy_input)
-                print("Model initialized with warmup prediction")
-
-                return True
-            else:
-                st.warning(
-                    f"Full model not found at {model_path}, attempting to load weights only."
-                )
-                baseModel = MobileNetV2(
-                    weights="imagenet", include_top=False, input_shape=(224, 224, 3)
-                )
-                baseModel.trainable = False
-                self.model = Sequential(
-                    [
-                        baseModel,
-                        GlobalAveragePooling2D(),
-                        Dense(
-                            128,
-                            activation="relu",
-                            kernel_regularizer=tf.keras.regularizers.l2(0.0001),
-                        ),
-                        BatchNormalization(),
-                        Dropout(0.3),
-                        Dense(
-                            64,
-                            activation="relu",
-                            kernel_regularizer=tf.keras.regularizers.l2(0.0001),
-                        ),
-                        BatchNormalization(),
-                        Dropout(0.3),
-                        Dense(
-                            32,
-                            activation="relu",
-                            kernel_regularizer=tf.keras.regularizers.l2(0.0001),
-                        ),
-                        Dense(10, activation="softmax"),
-                    ]
-                )
-
-                self.model.compile(
-                    optimizer="adam",
-                    loss="categorical_crossentropy",
-                    metrics=["accuracy"],
-                )
-
-                weights_path = "exported_models/fruit_model_weights.h5"
-                if os.path.exists(weights_path):
-                    self.model.load_weights(weights_path)
-                    print("Successfully loaded weights from", weights_path)
+                try:
+                    self.model = tf.keras.models.load_model(model_path)
+                    print(f"Successfully loaded entire model from {model_path}")
+                    
+                    dummy_input = np.zeros((1, self.img_height, self.img_width, 3))
+                    _ = self.model.predict(dummy_input)
+                    print("Model initialized with warmup prediction")
+                    
                     return True
-                else:
-                    st.error(
-                        "Neither full model nor weights found. Please check the paths."
-                    )
-                    return False
+                except Exception as e:
+                    if "Conv1" in str(e):
+                        st.warning(f"Error loading full model: {e}. Attempting to load weights only.")
+                        weights_path = "exported_models/fruit_model_weights.h5"
+                        self.model = tf.keras.models.load_model(weights_path)
+                        print(f"Successfully loaded weights from {weights_path}")
+                        return True
+                    else:
+                        raise e 
+            else:
+                st.warning(f"Full model not found at {model_path}, attempting to load weights only.")
 
         except Exception as e:
             st.error(f"Error loading model: {e}")
