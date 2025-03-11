@@ -39,6 +39,7 @@ class neuron_implement_viewset:
         ]
         self.img_height = 224
         self.img_width = 224
+
     def create_model():
         baseModel = MobileNetV2(weights=None, include_top=False, input_shape=(224, 224, 3))
         model = Sequential([
@@ -59,6 +60,7 @@ class neuron_implement_viewset:
             metrics=["accuracy"],
         )
         return model
+    
     def load_cnn_model(self):
         try:
             model_path = "exported_models/fruit_model.keras"
@@ -77,7 +79,8 @@ class neuron_implement_viewset:
                     if "Conv1" in str(e):
                         st.warning(f"Error loading full model: {e}. Attempting to load weights only.")
                         weights_path = "exported_models/fruit_model_weights.h5"
-                        self.model = tf.keras.models.load_model(weights_path)
+                        weight_model = self.create_model()
+                        weight_model.load_weights(weights_path)
                         print(f"Successfully loaded weights from {weights_path}")
                         return True
                     else:
