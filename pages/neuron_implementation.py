@@ -40,7 +40,7 @@ class neuron_implement_viewset:
         self.img_height = 224
         self.img_width = 224
 
-    def create_model():
+    def create_model(self):
         baseModel = MobileNetV2(weights=None, include_top=False, input_shape=(224, 224, 3))
         model = Sequential([
             baseModel,
