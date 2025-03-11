@@ -42,7 +42,7 @@ class neuron_implement_viewset:
 
     def load_cnn_model(self):
         try:
-            model_path = "exported_models/fruit_model"
+            model_path = "exported_models/fruit_model.keras"
 
             if os.path.exists(model_path):
                 self.model = tf.keras.models.load_model(model_path)
