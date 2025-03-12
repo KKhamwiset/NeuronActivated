@@ -2,23 +2,14 @@ import streamlit as st
 import numpy as np
 import tensorflow as tf
 from keras.layers import (
-    Conv2D,
-    MaxPooling2D,
     Dropout,
-    Flatten,
     Dense,
-    Activation,
     BatchNormalization,
-    Input,
     GlobalAveragePooling2D,
 )
 from keras.applications import MobileNetV2
-from keras.models import Sequential, model_from_json
-from keras.preprocessing.image import ImageDataGenerator, img_to_array, load_img
-from keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
-import joblib
+from keras.models import Sequential
 from PIL import Image
-import io
 import os
 
 
@@ -47,27 +38,17 @@ def create_model():
     return model
 
 
-# Create a cached function for model loading
 @st.cache_resource
 def load_cached_model(model_path, weights_path, img_height, img_width):
     """Cache the model loading to avoid reloading on each rerun"""
     try:
-        # First, try to load the full model
         if os.path.exists(model_path):
             try:
-                # Try loading the complete model
                 model = tf.keras.models.load_model(model_path)
                 print(f"Successfully loaded entire model from {model_path}")
-                
-                # Warmup prediction to initialize the model completely
-                dummy_input = np.zeros((1, img_height, img_width, 3))
-                _ = model.predict(dummy_input)
-                print("Model initialized with warmup prediction")
-                
                 return model, True, f"Successfully loaded entire model from {model_path}"
                 
             except Exception as e:
-                # Handle Conv1 layer error specifically
                 if "Conv1" in str(e):
                     print(f"Error loading full model: {e}. Attempting to load weights only.")
                     
@@ -185,11 +166,9 @@ class neuron_implement_viewset:
         with col2:
             st.subheader("Prediction Results")
             if prediction:
-                st.success(f"Predicted fruit: {prediction['class']}")
+                st.success(f"Predicted fruit: {prediction['class'].capitalize()}")
                 st.progress(prediction["confidence"])
                 st.write(f"Confidence: {prediction['confidence']:.2f}")
-
-                # Provide some interpretation
                 if prediction["confidence"] > 0.8:
                     st.write("✅ High confidence prediction")
                 elif prediction["confidence"] > 0.5:
