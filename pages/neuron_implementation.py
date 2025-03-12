@@ -113,7 +113,6 @@ def load_cached_model(model_path, weights_path, img_height, img_width):
 
 class neuron_implement_viewset:
     def __init__(self):
-        # Initialize model parameters
         self.class_names = [
             "apple",
             "avocado",
@@ -129,16 +128,15 @@ class neuron_implement_viewset:
         self.img_height = 224
         self.img_width = 224
         
-        # Load the cached model
+
         model_path = "exported_models/fruit_model.keras"
         weights_path = "exported_models/fruit_model_weights.h5"
         
-        # Load model using cached function
+
         self.model, self.model_loaded, message = load_cached_model(
             model_path, weights_path, self.img_height, self.img_width
         )
         
-        # Display appropriate message based on loading result
         if self.model_loaded:
             st.success(message)
         else:
@@ -146,31 +144,29 @@ class neuron_implement_viewset:
 
     def preprocess_image(self, image):
         """Preprocess an image for model prediction"""
-        # Resize to expected dimensions
         image = image.resize((self.img_width, self.img_height))
         
-        # Convert to array and add batch dimension
+
         img_array = tf.keras.utils.img_to_array(image)
         img_array = tf.expand_dims(img_array, 0)
         
-        # Scale pixel values to 0-1 range
         img_array = img_array / 255.0
         
         return img_array
 
     def predict_fruit(self, image):
         """Predict the fruit class from an image"""
-        # Check if model is loaded
+
         if self.model is None:
             if not self.model_loaded:
                 st.error("Failed to load the model. Cannot make predictions.")
                 return None
         
-        # Preprocess the image and get predictions
+
         processed_img = self.preprocess_image(image)
         predictions = self.model.predict(processed_img)
         
-        # Get the highest confidence prediction
+
         predicted_class_index = np.argmax(predictions[0])
         confidence = float(predictions[0][predicted_class_index])
         
@@ -209,7 +205,6 @@ class neuron_implement_viewset:
         st.write("Upload an image of a fruit")
         st.info(f"Currently supported fruits: {', '.join(self.class_names)}")
         
-        # Check if model is loaded before accepting uploads
         if not self.model_loaded:
             st.error("Model could not be loaded. Please check the server logs.")
             return
