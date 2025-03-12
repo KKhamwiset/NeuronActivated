@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
 import os
@@ -11,9 +10,7 @@ import time
 
 @st.cache_resource
 def load_model(model_path, scaler_path=None):
-    """Generic model loader that works with different model types"""
     try:
-        # Try loading model with joblib first
         try:
             model = joblib.load(model_path)
         except Exception as e1:
@@ -21,7 +18,6 @@ def load_model(model_path, scaler_path=None):
             with open(model_path, "rb") as f:
                 model = pickle.load(f)
 
-        # Load scaler if provided
         scaler = None
         if scaler_path:
             if not os.path.exists(scaler_path):
@@ -53,7 +49,6 @@ class ML_implement_viewset:
             "exported_models/rf/rf_income_scaler.pkl",
         )
 
-        # Check if models loaded successfully
         if self.svm_model is None or self.rf_model is None:
             st.error(
                 "Failed to load one or more models. Please check the file paths and formats."
@@ -64,11 +59,9 @@ class ML_implement_viewset:
 
         st.title("💰 Income Prediction Models")
 
-        # Create tabs for model selection and about
         main_tab1, main_tab2 = st.tabs(["📝 Make a Prediction", "ℹ️ About the Models"])
 
         with main_tab1:
-            # Check if models are loaded
             if self.svm_model is None and self.rf_model is None:
                 st.error("⚠️ Models could not be loaded. Unable to make predictions.")
                 return
@@ -78,13 +71,10 @@ class ML_implement_viewset:
                 "Fill in the form below and select a model to predict if your income exceeds $50K/year."
             )
 
-            # Get user input
             input_data = self._collect_user_input()
 
-            # Add a divider
             st.markdown("---")
 
-            # Model selection tabs
             model_tab1, model_tab2 = st.tabs(
                 ["Support Vector Machine", "Random Forest"]
             )
@@ -342,7 +332,6 @@ class ML_implement_viewset:
                         help="Losses from investment sources",
                     )
 
-            # Return input data as DataFrame
             return pd.DataFrame(
                 [
                     {
@@ -365,8 +354,6 @@ class ML_implement_viewset:
             )
 
     def _predict_with_model(self, input_data, model_type="svm"):
-        """Make prediction with specified model"""
-        # Determine which model and scaler to use
         if model_type == "svm":
             model = self.svm_model
             scaler = self.svm_scaler
@@ -376,7 +363,6 @@ class ML_implement_viewset:
             scaler = self.rf_scaler
             model_name = "Random Forest"
 
-        # Centered button
         button_col1, button_col2, button_col3 = st.columns([1, 2, 1])
         with button_col2:
             submit_button = st.button(
@@ -385,23 +371,20 @@ class ML_implement_viewset:
                 use_container_width=True,
             )
 
-        # Results section
+
         if submit_button and model is not None:
-            # Show progress
+
             with st.spinner(f"Processing your data with {model_name}..."):
                 progress_bar = st.progress(0)
                 for i in range(100):
-                    # Simulate computation
+
                     time.sleep(0.01)
                     progress_bar.progress(i + 1)
 
-                # Make actual prediction
                 processed_data = self._preprocess_data(input_data, scaler)
 
-                # Remove progress after completion
                 progress_bar.empty()
 
-            # Debug options with expanders
             debug_col1, debug_col2 = st.columns(2)
             with debug_col1:
                 with st.expander("🔍 Show Input Features"):
@@ -432,18 +415,17 @@ class ML_implement_viewset:
 
         df = input_data.copy()
 
-        # Ensure we only use features expected by the model
+        #
         if scaler is not None and hasattr(scaler, "feature_names_in_"):
             df = df[scaler.feature_names_in_]
 
-        # Convert categorical features
+
         for col in features_categorical:
             if col in df.columns:
                 df[col] = self._map_categorical_feature(df[col])
 
         df = df.astype(int)
 
-        # Scale features if scaler is available
         if scaler is not None:
             scaled_data = scaler.transform(df)
             df = pd.DataFrame(scaled_data, columns=df.columns)
@@ -451,13 +433,11 @@ class ML_implement_viewset:
         return df
 
     def _map_categorical_feature(self, feature_series):
-        """Map categorical features to integers (1 to n)"""
         unique_values = feature_series.unique()
         mapping = dict(zip(unique_values, range(1, len(unique_values) + 1)))
         return feature_series.map(mapping)
 
     def _display_results(self, processed_data, model, model_name):
-        """Display prediction results"""
         st.header(f"🔮 {model_name} Prediction Results")
 
         if hasattr(model, "predict_proba"):
@@ -552,7 +532,6 @@ class ML_implement_viewset:
                 st.info("Income prediction: ≤$50K")
 
     def _display_model_info(self):
-        """Display information about the models"""
         st.header("About These Models")
 
         svm_tab, rf_tab = st.tabs(["Support Vector Machine", "Random Forest"])
@@ -560,34 +539,63 @@ class ML_implement_viewset:
         with svm_tab:
             stat1, stat2, stat3 = st.columns(3)
             with stat1:
-                st.metric(label="Accuracy", value="81%", delta="2.5%")
+                st.metric(label="Accuracy", value="81%")
             with stat2:
-                st.metric(label="Precision", value="74%", delta="1.7%")
+                st.metric(label="Precision", value="74%")
             with stat3:
-                st.metric(label="Recall", value="65%", delta="-0.5%")
+                st.metric(label="Recall", value="65%")
 
             st.subheader("SVM Model Details")
             st.write("""
-            This Support Vector Machine (SVM) model was trained on the UCI Adult Census Income dataset. 
-            SVMs work by finding the hyperplane that best separates the two income classes in a high-dimensional space.
+                SVM หรือ Support Vector Machine ถือเป็นวิธีคลาสสิคที่น่าเรียนรู้มากทีเดียว 
+            เพราะไอเดียจากโมเดลนี้ก็เป็นหนึ่งในรากฐานสำคัญที่ทำให้เข้าใจโมเดลใหญ่ๆในปัจจุบันมากขึ้น 
+            อีกทั้งหนึ่งในผู้ที่คิดค้นวิธี Vladimir Naumovich Vapnik ซึ่งเป็นชาวรัสเซีย 
+            และยังเป็นนักวิทยาศาสตร์ที่ยิ่งใหญ่ในวงการ Machine Learning อีกด้วย
             """)
+            
+            st.markdown("---")
+            
+            st.write("""
+            หลักการพื้นฐานของ SVM คือการหาเส้นแบ่ง (Hyperplane) ที่ดีที่สุดในการแยกข้อมูลออกเป็นสองกลุ่ม โดยเส้นแบ่งที่ดีที่สุดคือเส้นที่มีระยะห่างจากจุดข้อมูลที่ใกล้ที่สุดของแต่ละกลุ่มมากที่สุด 
+            หรือที่เรียกว่ามี "margin" กว้างที่สุด
+            จุดข้อมูลที่อยู่ใกล้กับเส้นแบ่งมากที่สุดเหล่านี้เรียกว่า "Support Vectors" ซึ่งเป็นที่มาของชื่ออัลกอริทึม นี่คือความฉลาดของ SVM ที่ใช้เพียงบางจุดข้อมูลที่สำคัญในการกำหนดเส้นแบ่ง ไม่ใช่ทุกจุดข้อมูล
+            """)
+            
+            st.markdown("---")
+            
+            image_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "svm", "svm_data.png")
+            img = Image.open(image_path)
+            st.image(img, caption="SVM Data Visualization", use_container_width=True)
 
         with rf_tab:
-            # Create three columns for stats
             stat1, stat2, stat3 = st.columns(3)
             with stat1:
-                st.metric(label="Accuracy", value="85%", delta="3.2%")
+                st.metric(label="Accuracy", value="84%")
             with stat2:
-                st.metric(label="Precision", value="77%", delta="2.1%")
+                st.metric(label="Precision", value="77%")
             with stat3:
-                st.metric(label="Recall", value="68%", delta="0.8%")
+                st.metric(label="Recall", value="68%")
 
             st.subheader("Random Forest Model Details")
             st.write("""
-            This Random Forest model was trained on the UCI Adult Census Income dataset. 
-            Random Forests combine multiple decision trees to create a robust classifier that's less prone to overfitting.
+            Random forest เป็นหนึ่งในกลุ่มของโมเดลที่เรียกว่า Ensemble learning ที่มีหลักการคือการเทรนโมเดลที่เหมือนกันหลายๆ ครั้ง (หลาย Instance) บนข้อมูลชุดเดียวกัน
+            โดยแต่ละครั้งของการเทรนจะเลือกส่วนของข้อมูลที่เทรนไม่เหมือนกัน แล้วเอาการตัดสินใจของโมเดลเหล่านั้นมาโหวตกันว่า Class ไหนถูกเลือกมากที่สุด
             """)
+            
+            st.write("""
+            กระบวนการทำงานหลักๆ มีดังนี้:
+                1. การสุ่มตัวอย่าง (Bootstrap Sampling): แต่ละต้นไม้จะถูกสร้างจากตัวอย่างที่สุ่มมาจากชุดข้อมูลเดิมด้วยวิธีการสุ่มแบบทดแทน (sampling with replacement) ทำให้บางตัวอย่างอาจถูกเลือกซ้ำ และบางตัวอย่างอาจไม่ถูกเลือกเลย
+                2. การสุ่มคุณลักษณะ (Feature Randomness): ในแต่ละโหนดของต้นไม้ อัลกอริทึมจะไม่พิจารณาคุณลักษณะทั้งหมด แต่จะสุ่มเลือกเพียงบางส่วน ซึ่งช่วยเพิ่มความหลากหลายให้กับต้นไม้แต่ละต้น
+                3. การรวมผลลัพธ์ (Aggregation): สำหรับการจำแนกประเภท ผลลัพธ์สุดท้ายจะได้จากการโหวตเสียงข้างมากของทุกต้นไม้ ส่วนการถดถอย จะใช้ค่าเฉลี่ยของผลลัพธ์จากทุกต้นไม้
+            """)
+            
+            image_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "rf", "rf_img.png")
+            img = Image.open(image_path)
+            st.image(img, caption="RandomForest Data Visualization", use_container_width=True)
+            
         st.subheader("Features Used")
+        
+
         feature_col1, feature_col2 = st.columns(2)
 
         with feature_col1:

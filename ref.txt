@@ -1,10 +1,10 @@
 # header Streamlit_guide
 https://www.youtube.com/watch?v=hEPoto5xp3k Streamlit=Navigation=Bar
-https://youtu.be/GvRfFdymaFA?si=UENfqbx_ijMQMLsd Streamlit=Navigation=Bar
+https://youtu.be/GvRfFdymaFA?si=UENfqbx_ijMQMLsd Streamlit=Navigation=Bar=(2)
 # end_header
 # header Dataset
 https://archive.ics.uci.edu/dataset/2/adult Census=Income=Dataset
-https://www.kaggle.com/datasets/karimabdulnabi/fruit-classification10-class/data Fruits_Dataset (10 classes)
+https://www.kaggle.com/datasets/karimabdulnabi/fruit-classification10-class/data Fruits=Dataset=(10=classes)
 # end_header
 # header Emoji
 https://emojipedia.org/ emojipedia
@@ -15,6 +15,11 @@ https://www.datacamp.com/blog/supervised-machine-learning Difference=of=unsuperv
 https://www.datacamp.com/tutorial/random-forests-classifier-python RandomeForest=Model
 https://www.youtube.com/watch?v=JlgkJ3bMEmI How=to=train=CNN=model=for=fruit=classification
 https://www.youtube.com/watch?v=leXkKQU3QsM CNN=Hyper=Parameter=Tuning
+# end_header
+# header Model_Article
+https://beeying.medium.com/support-vector-machine-svm-%E0%B9%82%E0%B8%A1%E0%B9%80%E0%B8%94%E0%B8%A5%E0%B8%84%E0%B8%A5%E0%B8%B2%E0%B8%AA%E0%B8%AA%E0%B8%B4%E0%B8%84%E0%B8%97%E0%B8%B5%E0%B9%88%E0%B8%99%E0%B9%88%E0%B8%B2%E0%B8%A8%E0%B8%B6%E0%B8%81%E0%B8%A9%E0%B8%B2-78d1ce6da765 What=is=SVM=?
+https://shorturl.at/ZTfp5 What=is=RandomeForest=Model=?
+https://shorturl.at/8IR8Q What=is=CNN=?
 # end_header
 # header Styling
 https://claude.ai/ claudeAI

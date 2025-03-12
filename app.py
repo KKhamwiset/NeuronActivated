@@ -80,7 +80,6 @@ if st.session_state.show_home:
         unsafe_allow_html=True,
     )
 
-    # Main header with Bootstrap classes
     st.markdown(
         """
     <div class="container mt-4">
@@ -172,20 +171,8 @@ if st.session_state.show_home:
         unsafe_allow_html=True,
     )
 
-    st.markdown(
-        """
-    <div class="container">
-        <div class="card shadow-sm">
-            <div class="card-header">
-                <h5 class="mb-0"><span class="me-2">✨</span>Featured Content</h5>
-            </div>
-        </div>
-    </div>
-    """,
-        unsafe_allow_html=True,
-    )
 
-    # Footer with Bootstrap
+
     st.markdown(
         """
     <div class="container">
