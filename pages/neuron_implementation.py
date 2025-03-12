@@ -22,10 +22,98 @@ import io
 import os
 
 
+@st.cache_resource
+def create_model():
+    baseModel = MobileNetV2(weights="imagenet", include_top=False, input_shape=(224, 224, 3))
+    baseModel.trainable = False
+    model = Sequential([
+        baseModel,
+        GlobalAveragePooling2D(),
+        Dense(128, activation="relu", kernel_regularizer=tf.keras.regularizers.l2(0.0001)),
+        BatchNormalization(),
+        Dropout(0.3),
+        Dense(64, activation="relu", kernel_regularizer=tf.keras.regularizers.l2(0.0001)),
+        BatchNormalization(),
+        Dropout(0.3),
+        Dense(32, activation="relu", kernel_regularizer=tf.keras.regularizers.l2(0.0001)),
+        Dense(10, activation="softmax"),
+    ])
+    
+    model.compile(
+        loss="categorical_crossentropy",
+        optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+        metrics=["accuracy"],
+    )
+    return model
+
+
+# Create a cached function for model loading
+@st.cache_resource
+def load_cached_model(model_path, weights_path, img_height, img_width):
+    """Cache the model loading to avoid reloading on each rerun"""
+    try:
+        # First, try to load the full model
+        if os.path.exists(model_path):
+            try:
+                # Try loading the complete model
+                model = tf.keras.models.load_model(model_path)
+                print(f"Successfully loaded entire model from {model_path}")
+                
+                # Warmup prediction to initialize the model completely
+                dummy_input = np.zeros((1, img_height, img_width, 3))
+                _ = model.predict(dummy_input)
+                print("Model initialized with warmup prediction")
+                
+                return model, True, f"Successfully loaded entire model from {model_path}"
+                
+            except Exception as e:
+                # Handle Conv1 layer error specifically
+                if "Conv1" in str(e):
+                    print(f"Error loading full model: {e}. Attempting to load weights only.")
+                    
+                    # Try loading from architecture+weights instead
+                    if os.path.exists(weights_path):
+                        model = create_model()
+                        model.load_weights(weights_path)
+                        print(f"Successfully loaded weights from {weights_path}")
+                        
+                        # Warmup prediction
+                        dummy_input = np.zeros((1, img_height, img_width, 3))
+                        _ = model.predict(dummy_input)
+                        print("Model initialized with warmup prediction")
+                        
+                        return model, True, f"Successfully loaded weights from {weights_path}"
+                    else:
+                        return None, False, f"Weights file not found at {weights_path}"
+                else:
+                    # If it's a different error, raise it
+                    raise e
+        else:
+            print(f"Model not found at {model_path}")
+            
+            # Try loading weights only
+            if os.path.exists(weights_path):
+                model = create_model()
+                model.load_weights(weights_path)
+                print(f"Loaded weights-only from {weights_path}")
+                
+                # Warmup prediction
+                dummy_input = np.zeros((1, img_height, img_width, 3))
+                _ = model.predict(dummy_input)
+                
+                return model, True, f"Successfully loaded weights-only from {weights_path}"
+            else:
+                return None, False, "Neither model nor weights found. Please check the paths."
+
+    except Exception as e:
+        error_message = f"Error loading model: {e}"
+        print(error_message)
+        return None, False, error_message
+
+
 class neuron_implement_viewset:
     def __init__(self):
         # Initialize model parameters
-        self.model = None
         self.class_names = [
             "apple",
             "avocado",
@@ -40,100 +128,21 @@ class neuron_implement_viewset:
         ]
         self.img_height = 224
         self.img_width = 224
-        # Load the model once during initialization
-        self.model_loaded = self.load_cnn_model()
-
-    def create_model(self):
-        """Create the model architecture - same as used during training"""
-        baseModel = MobileNetV2(weights=None, include_top=False, input_shape=(224, 224, 3))
         
-        model = Sequential([
-            baseModel,
-            GlobalAveragePooling2D(),
-            Dense(128, activation="relu", kernel_regularizer=tf.keras.regularizers.l2(0.0001)),
-            BatchNormalization(),
-            Dropout(0.3),
-            Dense(64, activation="relu", kernel_regularizer=tf.keras.regularizers.l2(0.0001)),
-            BatchNormalization(),
-            Dropout(0.3),
-            Dense(32, activation="relu", kernel_regularizer=tf.keras.regularizers.l2(0.0001)),
-            Dense(10, activation="softmax"),
-        ])
+        # Load the cached model
+        model_path = "exported_models/fruit_model.keras"
+        weights_path = "exported_models/fruit_model_weights.h5"
         
-        model.compile(
-            loss="categorical_crossentropy",
-            optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
-            metrics=["accuracy"],
+        # Load model using cached function
+        self.model, self.model_loaded, message = load_cached_model(
+            model_path, weights_path, self.img_height, self.img_width
         )
-        return model
-    
-    def load_cnn_model(self):
-        """Load the model - supports full model or weights-only loading"""
-        try:
-            # First, try to load the full model
-            model_path = "exported_models/fruit_model.keras"
-            weights_path = "exported_models/fruit_model_weights.h5"
-            
-            if os.path.exists(model_path):
-                try:
-                    # Try loading the complete model
-                    self.model = tf.keras.models.load_model(model_path)
-                    print(f"Successfully loaded entire model from {model_path}")
-                    st.success(f"Successfully loaded entire model from {model_path}")
-                    
-                    # Warmup prediction to initialize the model completely
-                    dummy_input = np.zeros((1, self.img_height, self.img_width, 3))
-                    _ = self.model.predict(dummy_input)
-                    print("Model initialized with warmup prediction")
-                    
-                    return True
-                    
-                except Exception as e:
-                    # Handle Conv1 layer error specifically
-                    if "Conv1" in str(e):
-                        st.warning(f"Error loading full model: {e}. Attempting to load weights only.")
-                        
-                        # Try loading from architecture+weights instead
-                        if os.path.exists(weights_path):
-                            self.model = self.create_model()
-                            self.model.load_weights(weights_path)
-                            print(f"Successfully loaded weights from {weights_path}")
-                            st.success(f"Successfully loaded weights from {weights_path}")
-                            
-                            # Warmup prediction
-                            dummy_input = np.zeros((1, self.img_height, self.img_width, 3))
-                            _ = self.model.predict(dummy_input)
-                            print("Model initialized with warmup prediction")
-                            
-                            return True
-                        else:
-                            st.error(f"Weights file not found at {weights_path}")
-                            return False
-                    else:
-                        # If it's a different error, raise it
-                        raise e
-            else:
-                st.warning(f"Model not found at {model_path}")
-                
-                # Try loading weights only
-                if os.path.exists(weights_path):
-                    self.model = self.create_model()
-                    self.model.load_weights(weights_path)
-                    print(f"Loaded weights-only from {weights_path}")
-                    st.success(f"Successfully loaded weights-only from {weights_path}")
-                    
-                    # Warmup prediction
-                    dummy_input = np.zeros((1, self.img_height, self.img_width, 3))
-                    _ = self.model.predict(dummy_input)
-                    
-                    return True
-                else:
-                    st.error("Neither model nor weights found. Please check the paths.")
-                    return False
-
-        except Exception as e:
-            st.error(f"Error loading model: {e}")
-            return False
+        
+        # Display appropriate message based on loading result
+        if self.model_loaded:
+            st.success(message)
+        else:
+            st.error(message)
 
     def preprocess_image(self, image):
         """Preprocess an image for model prediction"""
