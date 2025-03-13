@@ -98,7 +98,10 @@ if st.session_state.show_home:
     )
 
     col1, col2 = st.columns(2)
-
+    st.info("""
+    ** หมายเหตุเรื่อง Datasets ครับ!**
+    * เนื่องจาก Dataset ที่ใช้เทรน Model รูปภาพมีขนาดใหญ่มากกว่าที่จะ add เข้าใน git จึงอยากให้เข้าไปดูผ่านทาง Reference นะครับ
+    """)
     with col1:
         st.markdown(
             """
